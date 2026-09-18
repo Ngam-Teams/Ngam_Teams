@@ -87,15 +87,12 @@ class _DashboardShellState extends State<DashboardShell> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.secondary],
-                        ),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
-                        Icons.groups_rounded,
-                        color: Colors.white,
-                        size: 20,
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.asset(
+                        'assets/app.png',
+                        fit: BoxFit.cover,
                       ),
                     ),
                     const SizedBox(width: 12),

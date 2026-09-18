@@ -6,15 +6,17 @@ class AppColors {
   AppColors._();
 
   // ─── Brand ──────────────────────────────────────────────────
-  static const Color primary = Color(0xFF6C63FF);
-  static const Color primaryLight = Color(0xFF8B83FF);
-  static const Color secondary = Color(0xFF4ECDC4);
+  static const Color primary = Color(0xFF2196F3);
+  static const Color primaryLight = Color(0xFF64B5F6);
+  static const Color primaryDark = Color(0xFF1976D2);
+  static const Color secondary = Color(0xFF42A5F5);
+  static const Color accent = Color(0xFF42A5F5);
 
   // ─── Semantic ───────────────────────────────────────────────
-  static const Color success = Color(0xFF44CF6C);
-  static const Color warning = Color(0xFFF9C80E);
-  static const Color error = Color(0xFFFF6B6B);
-  static const Color info = Color(0xFF42A5F5);
+  static const Color success = Color(0xFF2ECC71);
+  static const Color warning = Color(0xFFF39C12);
+  static const Color error = Color(0xFFE74C3C);
+  static const Color info = Color(0xFF3498DB);
 
   // ─── Surfaces ───────────────────────────────────────────────
   static const Color background = Color(0xFF0A0A14);
