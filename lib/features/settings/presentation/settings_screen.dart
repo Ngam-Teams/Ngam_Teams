@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -76,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(width: 12),
                   _StatCardGlass(
                     label: context.tr('settings.perf_stat'),
-                    value: '4.9 ★',
+                    value: '4.9',
                     icon: HugeIcons.strokeRoundedStar,
                     isDark: isDark,
                   ),
@@ -134,7 +133,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildDivider(isDark),
                     _buildToggleTile(
                       isDark: isDark,
-                      icon: HugeIcons.strokeRoundedMoon02,
+                      icon: isDark
+                          ? HugeIcons.strokeRoundedMoon02
+                          : HugeIcons.strokeRoundedSun01,
+                      iconColor: AppColors.primary,
                       title: context.tr('settings.dark_mode'),
                       value: AppSettings.instance.isDarkMode,
                       onChanged: (v) {
@@ -298,6 +300,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  LiquidGlassSettings _getGlassSettings(bool isDark) {
+    return LiquidGlassSettings(
+      thickness: 0.1,
+      blur: 15,
+      refractiveIndex: 1.0,
+      glassColor: Colors.transparent,
+      lightAngle: 45.0,
+      lightIntensity: isDark ? 0.1 : 0.2,
+      ambientStrength: 1.0,
+      saturation: 1.0,
+      chromaticAberration: 0.0,
+    );
+  }
+
   // ─── Header Profil Card ───────────────────────────────────────
   Widget _buildProfileHeader(bool isDark) {
     return Material(
@@ -305,150 +321,140 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: InkWell(
         onTap: _navigateToProfile,
         borderRadius: BorderRadius.circular(24),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.12),
-                    AppColors.secondary.withValues(alpha: isDark ? 0.08 : 0.06),
-                  ],
-                ),
-                color: isDark ? null : Colors.white.withValues(alpha: 0.45),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.65),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                    blurRadius: 18,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+        child: GlassContainer(
+          useOwnLayer: true,
+          quality: GlassQuality.standard,
+          shape: const LiquidRoundedSuperellipse(borderRadius: 24.0),
+          settings: _getGlassSettings(isDark),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(24.0),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.6),
+                width: 1.0,
               ),
-              child: Row(
-                children: [
-                  // Avatar
-                  Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.secondary],
-                      ),
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.35),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Avatar
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.5),
+                      width: 2,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'AH',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 22,
-                        ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                    child: Text(
+                      'AH',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 20,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 18),
+                ),
+                const SizedBox(width: 16),
 
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
                               'Ahmad Haziq',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                color: isDark ? Colors.white : Colors.black87,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: -0.3,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.success.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: AppColors.success.withValues(alpha: 0.4),
-                                ),
-                              ),
-                              child: Text(
-                                context.tr('profile.active'),
-                                style: const TextStyle(
-                                  color: AppColors.success,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: AppColors.success.withValues(alpha: 0.4),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Senior Developer • Engineering',
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.6)
-                                : const Color(0xFF64748B),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                            child: Text(
+                              context.tr('profile.active'),
+                              style: const TextStyle(
+                                color: AppColors.success,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Senior Developer • Engineering',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.6)
+                              : const Color(0xFF64748B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'ahmad.haziq@ngam.my',
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.38)
-                                : const Color(0xFF94A3B8),
-                            fontSize: 12,
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'ahmad.haziq@ngam.my',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.38)
+                              : const Color(0xFF94A3B8),
+                          fontSize: 12,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
 
-                  // Action arrow
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.06)
-                          : Colors.black.withValues(alpha: 0.04),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: HugeIcon(
-                      icon: HugeIcons.strokeRoundedArrowRight01,
-                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
-                      size: 20,
-                    ),
-                  ),
-                ],
-              ),
+                // Action arrow
+                const SizedBox(width: 8),
+                const HugeIcon(
+                  icon: HugeIcons.strokeRoundedArrowRight01,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+              ],
             ),
           ),
         ),
@@ -457,18 +463,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // ─── Section Header ──────────────────────────────────────────
-  Widget _buildSectionHeader(String title, bool isDark) {
+  Widget _buildSectionHeader(String title, [bool? isDark]) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 10),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.45)
-              : const Color(0xFF64748B),
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
+      padding: const EdgeInsets.only(left: 8, bottom: 12),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
         ),
       ),
     );
@@ -480,25 +487,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       useOwnLayer: true,
       quality: GlassQuality.standard,
       shape: const LiquidRoundedSuperellipse(borderRadius: 24.0),
-      settings: LiquidGlassSettings(
-        thickness: 0.1,
-        blur: 15,
-        refractiveIndex: 1.0,
-        glassColor: Colors.transparent,
-        lightAngle: 45.0,
-        lightIntensity: isDark ? 0.1 : 0.2,
-        ambientStrength: 1.0,
-        saturation: 1.0,
-        chromaticAberration: 0.0,
-      ),
+      settings: _getGlassSettings(isDark),
       child: Container(
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.04)
-              : Colors.white.withValues(alpha: 0.45),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.white.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(24.0),
           border: Border.all(
-            color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.65),
+            color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.6),
             width: 1.0,
           ),
           boxShadow: [
@@ -529,56 +526,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.1),
-                  borderRadius: BorderRadius.circular(12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: icon is IconData
+                      ? Icon(
+                          icon,
+                          color: isDark ? Colors.white : Colors.black87,
+                          size: 20,
+                        )
+                      : HugeIcon(
+                          icon: icon,
+                          color: isDark ? Colors.white : Colors.black87,
+                          size: 20,
+                        ),
                 ),
-                child: HugeIcon(
-                  icon: icon,
-                  color: AppColors.primary,
-                  size: 20,
-                  strokeWidth: 2.1,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xFF1E293B),
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        subtitle,
+                        title,
                         style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.45)
-                              : const Color(0xFF64748B),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
                         ),
                       ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.45)
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              if (trailing != null) ...[
-                trailing,
-              ] else ...[
-                _buildArrow(isDark),
+                if (trailing != null) ...[
+                  trailing,
+                  const SizedBox(width: 8),
+                ] else ...[
+                  _buildArrow(isDark),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -592,49 +600,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required bool value,
     required ValueChanged<bool> onChanged,
+    Color? iconColor,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.black.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: icon is IconData
+                  ? Icon(
+                      icon,
+                      color: iconColor ?? (isDark ? Colors.white : Colors.black87),
+                      size: 20,
+                    )
+                  : HugeIcon(
+                      icon: icon,
+                      color: iconColor ?? (isDark ? Colors.white : Colors.black87),
+                      size: 20,
+                    ),
             ),
-            child: HugeIcon(
-              icon: icon,
-              color: AppColors.primary,
-              size: 20,
-              strokeWidth: 2.1,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : const Color(0xFF1E293B),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
             ),
-          ),
-          Switch.adaptive(
-            value: value,
-            activeColor: AppColors.primary,
-            inactiveThumbColor: Colors.white,
-            inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-            thumbIcon: WidgetStateProperty.all(
-              const Icon(Icons.circle, color: Colors.transparent),
+            Switch.adaptive(
+              value: value,
+              activeColor: AppColors.primary,
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+              thumbIcon: WidgetStateProperty.all(
+                const Icon(Icons.circle, color: Colors.transparent),
+              ),
+              onChanged: onChanged,
             ),
-            onChanged: onChanged,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -652,26 +669,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: GlassContainer(
         useOwnLayer: true,
         quality: GlassQuality.standard,
-        shape: const LiquidRoundedSuperellipse(borderRadius: 20.0),
-        settings: LiquidGlassSettings(
-          thickness: 0.1,
-          blur: 15,
-          refractiveIndex: 1.0,
-          glassColor: Colors.transparent,
-          lightAngle: 45.0,
-          lightIntensity: isDark ? 0.1 : 0.2,
-          ambientStrength: 1.0,
-          saturation: 1.0,
-          chromaticAberration: 0.0,
-        ),
+        shape: const LiquidRoundedSuperellipse(borderRadius: 24.0),
+        settings: _getGlassSettings(isDark),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: isDark ? 0.12 : 0.08),
-            borderRadius: BorderRadius.circular(20),
+            color: color.withValues(alpha: isDark ? 0.1 : 0.15),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: color.withValues(alpha: isDark ? 0.35 : 0.4),
+              color: color.withValues(alpha: isDark ? 0.3 : 0.5),
               width: 1.0,
             ),
           ),
@@ -682,15 +689,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: icon,
                 color: color,
                 size: 20,
-                strokeWidth: 2.2,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
                   color: color,
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -701,21 +707,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDivider(bool isDark) => Padding(
-        padding: const EdgeInsets.only(left: 62, right: 18),
+        padding: const EdgeInsets.only(left: 60, right: 16),
         child: Divider(
           height: 1,
           color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
         ),
       );
 
-  Widget _buildArrow(bool isDark) => HugeIcon(
+  Widget _buildArrow([bool? isDark]) => const HugeIcon(
         icon: HugeIcons.strokeRoundedArrowRight01,
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.3)
-            : const Color(0xFF94A3B8),
-        size: 18,
+        color: Colors.grey,
+        size: 20,
       );
 
   // ─── Modal Sheets & Dialogs ──────────────────────────────────
@@ -1249,7 +1253,7 @@ class _StatCardGlass extends StatelessWidget {
       child: GlassContainer(
         useOwnLayer: true,
         quality: GlassQuality.standard,
-        shape: const LiquidRoundedSuperellipse(borderRadius: 20.0),
+        shape: const LiquidRoundedSuperellipse(borderRadius: 24.0),
         settings: LiquidGlassSettings(
           thickness: 0.1,
           blur: 15,
@@ -1262,21 +1266,21 @@ class _StatCardGlass extends StatelessWidget {
           chromaticAberration: 0.0,
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.04)
-                : Colors.white.withValues(alpha: 0.45),
-            borderRadius: BorderRadius.circular(20.0),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(24.0),
             border: Border.all(
-              color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.65),
+              color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.6),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.05),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -1285,28 +1289,24 @@ class _StatCardGlass extends StatelessWidget {
               HugeIcon(
                 icon: icon,
                 size: 22,
-                color: AppColors.primary,
-                strokeWidth: 2.2,
+                color: isDark ? Colors.white70 : Colors.black54,
               ),
               const SizedBox(height: 8),
               Text(
                 value,
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : Colors.black87,
                   letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.5)
-                      : const Color(0xFF64748B),
+                  fontSize: 12,
+                  color: isDark ? Colors.white60 : Colors.black54,
                 ),
               ),
             ],

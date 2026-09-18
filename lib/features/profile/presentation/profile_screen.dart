@@ -7,6 +7,7 @@ import '../../../core/localization/app_translations.dart';
 import '../../../widgets/glass_panel.dart';
 import '../../../widgets/glass_toast.dart';
 import '../../../widgets/modal_sheet.dart';
+import '../../../widgets/ngam_nav_back_button.dart';
 
 // ============================================================
 // Ngam Teams — Staff Profile Screen
@@ -45,38 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     children: [
                       if (canPop) ...[
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.06)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isDark
-                                    ? AppColors.glassBorder
-                                    : Colors.black.withValues(alpha: 0.08),
-                              ),
-                              boxShadow: isDark
-                                  ? null
-                                  : [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.04),
-                                        blurRadius: 8,
-                                      ),
-                                    ],
-                            ),
-                            child: HugeIcon(
-                              icon: HugeIcons.strokeRoundedArrowLeft01,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1E293B),
-                              size: 20,
-                            ),
-                          ),
-                        ),
+                        const NgamNavBackButton(),
                         const SizedBox(width: 14),
                       ],
                       Text(

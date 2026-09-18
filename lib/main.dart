@@ -15,6 +15,9 @@ import 'core/state/app_settings.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize persisted theme & localization preferences
+  await AppSettings.instance.init();
+
   try {
     await dotenv.load(fileName: '.env');
   } catch (_) {
