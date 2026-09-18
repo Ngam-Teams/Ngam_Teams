@@ -77,12 +77,14 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 120),
       child: Column(
         children: [
           // ─── Clock & Check-in Button ──────────────────────────
-          _buildClockCard(),
+          _buildClockCard(isDark),
           const SizedBox(height: 24),
 
           // ─── Today's Status ───────────────────────────────────
@@ -129,7 +131,10 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   status: 'Present',
                   statusColor: AppColors.success,
                 ),
-                const Divider(color: Colors.white12, height: 24),
+                Divider(
+                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
+                  height: 24,
+                ),
                 _HistoryRow(
                   date: 'Tue, Sep 15',
                   checkIn: '08:55 AM',
@@ -137,7 +142,10 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   status: 'Present',
                   statusColor: AppColors.success,
                 ),
-                const Divider(color: Colors.white12, height: 24),
+                Divider(
+                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
+                  height: 24,
+                ),
                 _HistoryRow(
                   date: 'Wed, Sep 16',
                   checkIn: '09:32 AM',
@@ -145,7 +153,10 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   status: 'Late',
                   statusColor: AppColors.warning,
                 ),
-                const Divider(color: Colors.white12, height: 24),
+                Divider(
+                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
+                  height: 24,
+                ),
                 _HistoryRow(
                   date: 'Thu, Sep 17',
                   checkIn: _checkInTime ?? '—',
@@ -155,7 +166,10 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                       ? AppColors.primary
                       : (_checkInTime != null ? AppColors.success : AppColors.textTertiary),
                 ),
-                const Divider(color: Colors.white12, height: 24),
+                Divider(
+                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
+                  height: 24,
+                ),
                 _HistoryRow(
                   date: 'Fri, Sep 18',
                   checkIn: '—',
@@ -171,7 +185,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     );
   }
 
-  Widget _buildClockCard() {
+  Widget _buildClockCard(bool isDark) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -184,20 +198,33 @@ class _AttendanceScreenState extends State<AttendanceScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                (_isCheckedIn ? AppColors.success : AppColors.primary).withValues(alpha: 0.15),
-                (_isCheckedIn ? AppColors.secondary : AppColors.primary).withValues(alpha: 0.05),
+                (_isCheckedIn ? AppColors.success : AppColors.primary).withValues(alpha: isDark ? 0.15 : 0.12),
+                (_isCheckedIn ? AppColors.secondary : AppColors.primary).withValues(alpha: isDark ? 0.05 : 0.04),
               ],
             ),
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.45),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.glassBorder, width: 1.2),
+            border: Border.all(
+              color: isDark ? AppColors.glassBorder : Colors.white.withValues(alpha: 0.65),
+              width: 1.2,
+            ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Column(
             children: [
               // Live clock
               Text(
                 _currentTime,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
                   fontSize: 42,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -1.0,
@@ -206,7 +233,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
               Text(
                 DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now()),
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -275,7 +302,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
               Text(
                 _isCheckedIn ? 'Tap to check out' : 'Tap to check in',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -304,12 +331,14 @@ class _StatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
+            color: color.withValues(alpha: isDark ? 0.15 : 0.12),
             shape: BoxShape.circle,
           ),
           child: HugeIcon(icon: icon, color: color, size: 20, strokeWidth: 2.1),
@@ -319,7 +348,7 @@ class _StatusRow extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF64748B),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -327,8 +356,8 @@ class _StatusRow extends StatelessWidget {
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: isDark ? Colors.white : const Color(0xFF1E293B),
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -356,6 +385,8 @@ class _HistoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Expanded(
@@ -365,8 +396,8 @@ class _HistoryRow extends StatelessWidget {
             children: [
               Text(
                 date,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -375,7 +406,7 @@ class _HistoryRow extends StatelessWidget {
               Text(
                 '$checkIn – $checkOut',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B),
                   fontSize: 12,
                 ),
               ),
@@ -385,7 +416,7 @@ class _HistoryRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: 0.12),
+            color: statusColor.withValues(alpha: isDark ? 0.15 : 0.12),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: statusColor.withValues(alpha: 0.3)),
           ),

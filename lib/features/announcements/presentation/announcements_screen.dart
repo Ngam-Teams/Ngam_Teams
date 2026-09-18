@@ -91,6 +91,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       itemCount: sorted.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         final a = sorted[index];
         final isExpanded = _expandedIndex == index;
 
@@ -114,7 +115,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: a.priorityColor.withValues(alpha: 0.15),
+                        color: a.priorityColor.withValues(alpha: isDark ? 0.15 : 0.12),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: a.priorityColor.withValues(alpha: 0.3),
@@ -133,7 +134,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                       const SizedBox(width: 8),
                       Icon(
                         Icons.push_pin_rounded,
-                        color: AppColors.warning.withValues(alpha: 0.7),
+                        color: AppColors.warning.withValues(alpha: 0.8),
                         size: 16,
                       ),
                     ],
@@ -141,7 +142,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     Text(
                       a.date,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF94A3B8),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -153,8 +154,8 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 // Title
                 Text(
                   a.title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -173,7 +174,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF475569),
                       fontSize: 14,
                       height: 1.6,
                     ),
@@ -181,7 +182,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                   secondChild: Text(
                     a.body,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.75),
+                      color: isDark ? Colors.white.withValues(alpha: 0.75) : const Color(0xFF334155),
                       fontSize: 14,
                       height: 1.6,
                     ),
@@ -194,14 +195,14 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                   children: [
                     HugeIcon(
                       icon: HugeIcons.strokeRoundedUser,
-                      color: Colors.white.withValues(alpha: 0.4),
+                      color: isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF94A3B8),
                       size: 14,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       a.author,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF94A3B8),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -212,7 +213,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                       duration: const Duration(milliseconds: 300),
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF94A3B8),
                         size: 20,
                       ),
                     ),

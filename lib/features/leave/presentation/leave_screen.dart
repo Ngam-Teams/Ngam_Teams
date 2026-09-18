@@ -60,15 +60,17 @@ class _LeaveScreenState extends State<LeaveScreen> {
         String selectedType = 'Annual Leave';
         final reasonController = TextEditingController();
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return ListView(
               controller: scrollController,
               children: [
-                const Text(
+                Text(
                   'Apply for Leave',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
@@ -78,7 +80,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 Text(
                   'Fill in the details below',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B),
                     fontSize: 14,
                   ),
                 ),
@@ -88,7 +90,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 Text(
                   'Leave Type',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF334155),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -114,19 +116,19 @@ class _LeaveScreenState extends State<LeaveScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primary.withValues(alpha: 0.2)
-                              : Colors.white.withValues(alpha: 0.05),
+                              ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.12)
+                              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04)),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.primary.withValues(alpha: 0.5)
-                                : Colors.white.withValues(alpha: 0.1),
+                                : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08)),
                           ),
                         ),
                         child: Text(
                           type,
                           style: TextStyle(
-                            color: isSelected ? AppColors.primary : Colors.white70,
+                            color: isSelected ? AppColors.primary : (isDark ? Colors.white70 : const Color(0xFF475569)),
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                             fontSize: 14,
                           ),
@@ -164,7 +166,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 Text(
                   'Reason',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF334155),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -173,24 +175,24 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 TextField(
                   controller: reasonController,
                   maxLines: 3,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B)),
                   decoration: InputDecoration(
                     hintText: 'Brief reason for your leave...',
                     hintStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: isDark ? Colors.white.withValues(alpha: 0.3) : const Color(0xFF94A3B8),
                     ),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.1),
+                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.1),
+                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -243,6 +245,8 @@ class _LeaveScreenState extends State<LeaveScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 120),
       child: Column(
@@ -288,7 +292,11 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 final r = entry.value;
                 return Column(
                   children: [
-                    if (index > 0) const Divider(color: Colors.white12, height: 24),
+                    if (index > 0)
+                      Divider(
+                        color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
+                        height: 24,
+                      ),
                     _LeaveRequestRow(request: r),
                   ],
                 );
@@ -305,26 +313,26 @@ class _LeaveScreenState extends State<LeaveScreen> {
       builder: (context, constraints) {
         final items = [
           _BalanceItem(
-            label: 'Annual',
+            label: 'Annual Leave',
             used: 6,
             total: 18,
             color: AppColors.primary,
           ),
           _BalanceItem(
-            label: 'Medical',
+            label: 'Medical Leave',
             used: 2,
             total: 14,
             color: AppColors.info,
           ),
           _BalanceItem(
-            label: 'Emergency',
+            label: 'Emergency Leave',
             used: 1,
             total: 5,
             color: AppColors.warning,
           ),
         ];
 
-        if (constraints.maxWidth >= 500) {
+        if (constraints.maxWidth >= 600) {
           return Row(
             children: items
                 .map((item) => Expanded(
@@ -338,78 +346,91 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 .toList(),
           );
         }
-        return Column(
-          children: items
-              .map((item) => Padding(
-                    padding: EdgeInsets.only(
-                      bottom: items.indexOf(item) < items.length - 1 ? 12 : 0,
-                    ),
-                    child: _buildBalanceCard(item),
-                  ))
-              .toList(),
+        return SizedBox(
+          height: 140,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              return SizedBox(
+                width: 180,
+                child: _buildBalanceCard(items[index]),
+              );
+            },
+          ),
         );
       },
     );
   }
 
   Widget _buildBalanceCard(_BalanceItem item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final remaining = item.total - item.used;
     final progress = item.used / item.total;
 
     return GlassPanel(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                item.label,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF64748B),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               Text(
                 '$remaining left',
                 style: TextStyle(
                   color: item.color,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
           Text(
             '$remaining',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -1.0,
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Progress bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.white.withValues(alpha: 0.08),
-              valueColor: AlwaysStoppedAnimation(item.color),
-              minHeight: 6,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${item.used} of ${item.total} used',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.4),
-              fontSize: 12,
+              color: isDark ? Colors.white : const Color(0xFF1E293B),
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.8,
             ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+                  valueColor: AlwaysStoppedAnimation(item.color),
+                  minHeight: 5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${item.used} of ${item.total} used',
+                style: TextStyle(
+                  color: isDark ? Colors.white.withValues(alpha: 0.45) : const Color(0xFF94A3B8),
+                  fontSize: 11,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -439,13 +460,15 @@ class _LeaveRequestRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: request.statusColor.withValues(alpha: 0.12),
+            color: request.statusColor.withValues(alpha: isDark ? 0.15 : 0.12),
             shape: BoxShape.circle,
           ),
           child: HugeIcon(
@@ -461,8 +484,8 @@ class _LeaveRequestRow extends StatelessWidget {
             children: [
               Text(
                 request.type,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -471,7 +494,7 @@ class _LeaveRequestRow extends StatelessWidget {
               Text(
                 '${request.from} — ${request.to} (${request.days} day${request.days > 1 ? 's' : ''})',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF64748B),
                   fontSize: 13,
                 ),
               ),
@@ -479,7 +502,7 @@ class _LeaveRequestRow extends StatelessWidget {
               Text(
                 request.reason,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: isDark ? Colors.white.withValues(alpha: 0.45) : const Color(0xFF94A3B8),
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
                 ),
@@ -490,7 +513,7 @@ class _LeaveRequestRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: request.statusColor.withValues(alpha: 0.12),
+            color: request.statusColor.withValues(alpha: isDark ? 0.12 : 0.1),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: request.statusColor.withValues(alpha: 0.3),
@@ -545,6 +568,8 @@ class _DatePickerFieldState extends State<_DatePickerField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () async {
         final date = await showDatePicker(
@@ -555,11 +580,17 @@ class _DatePickerFieldState extends State<_DatePickerField> {
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                colorScheme: const ColorScheme.dark(
-                  primary: AppColors.primary,
-                  surface: AppColors.surface,
-                  onSurface: Colors.white,
-                ),
+                colorScheme: isDark
+                    ? const ColorScheme.dark(
+                        primary: AppColors.primary,
+                        surface: AppColors.surface,
+                        onSurface: Colors.white,
+                      )
+                    : const ColorScheme.light(
+                        primary: AppColors.primary,
+                        surface: Colors.white,
+                        onSurface: Color(0xFF1E293B),
+                      ),
               ),
               child: child!,
             );
@@ -572,17 +603,17 @@ class _DatePickerFieldState extends State<_DatePickerField> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
           ),
         ),
         child: Row(
           children: [
             HugeIcon(
               icon: HugeIcons.strokeRoundedCalendar03,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B),
               size: 18,
             ),
             const SizedBox(width: 10),
@@ -592,8 +623,8 @@ class _DatePickerFieldState extends State<_DatePickerField> {
                   : widget.label,
               style: TextStyle(
                 color: _selectedDate != null
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.4),
+                    ? (isDark ? Colors.white : const Color(0xFF1E293B))
+                    : (isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF94A3B8)),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
