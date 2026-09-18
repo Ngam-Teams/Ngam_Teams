@@ -308,9 +308,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: _navigateToProfile,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(24.0),
+          borderRadius: BorderRadius.circular(20.0),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
@@ -318,20 +318,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(24.0),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.white.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(20.0),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.12)
-                      : Colors.white,
-                  width: 1.5,
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.4),
+                  width: 1.0,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1E293B)
-                        .withValues(alpha: isDark ? 0.25 : 0.04),
-                    blurRadius: 20,
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                    blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
                 ],
@@ -386,10 +385,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 style: TextStyle(
                                   color: isDark
                                       ? Colors.white
-                                      : const Color(0xFF0F172A),
+                                      : Colors.black87,
                                   fontSize: 17,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.3,
+                                  fontFamily: 'Inter',
                                 ),
                               ),
                             ),
@@ -427,6 +427,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       color: Color(0xFF059669),
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
+                                      fontFamily: 'Inter',
                                     ),
                                   ),
                                 ],
@@ -445,6 +446,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 : const Color(0xFF64748B),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
+                            fontFamily: 'Inter',
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -457,6 +459,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ? Colors.white.withValues(alpha: 0.38)
                                 : const Color(0xFF94A3B8),
                             fontSize: 12,
+                            fontFamily: 'Inter',
                           ),
                         ),
                       ],
@@ -465,12 +468,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   // Action arrow
                   const SizedBox(width: 8),
-                  Icon(
+                  const Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 14,
-                    color: isDark
-                        ? Colors.white30
-                        : const Color(0xFFCBD5E1),
+                    color: Colors.grey,
                   ),
                 ],
               ),
@@ -484,19 +485,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ─── Section Header ──────────────────────────────────────────
   Widget _buildSectionHeader(String title, [bool? isDark]) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, bottom: 10),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          title,
-          style: TextStyle(
-            color: (isDark ?? false)
-                ? Colors.white38
-                : const Color(0xFF94A3B8),
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.1,
-          ),
+      padding: const EdgeInsets.only(left: 8, bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.grey,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+          fontFamily: 'Inter',
         ),
       ),
     );
@@ -505,26 +502,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ─── Glass Container Section ─────────────────────────────────
   Widget _buildGlassSection(bool isDark, Widget child) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24.0),
+      borderRadius: BorderRadius.circular(20.0),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.06)
-                : Colors.white.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(24.0),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.25),
+            borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.white,
-              width: 1.5,
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.4),
+              width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1E293B)
-                    .withValues(alpha: isDark ? 0.25 : 0.04),
-                blurRadius: 20,
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
             ],
@@ -544,75 +540,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Widget? trailing,
     VoidCallback? onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.06)
-                      : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: icon is IconData
-                      ? Icon(
-                          icon,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B),
-                          size: 20,
-                        )
-                      : HugeIcon(
-                          icon: icon,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B),
-                          size: 20,
-                          strokeWidth: 2.0,
-                        ),
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+              child: icon is IconData
+                  ? Icon(
+                      icon,
+                      color: isDark ? Colors.white : Colors.black87,
+                      size: 20,
+                    )
+                  : HugeIcon(
+                      icon: icon,
+                      color: isDark ? Colors.white : Colors.black87,
+                      size: 20,
+                    ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Inter',
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
                     Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                        fontFamily: 'Inter',
                       ),
                     ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.45)
-                              : const Color(0xFF64748B),
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-              if (trailing != null) ...[
-                trailing,
-              ] else ...[
-                _buildArrow(isDark),
-              ],
-            ],
-          ),
+            ),
+            if (trailing != null)
+              trailing
+            else
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.grey,
+                size: 14,
+              ),
+          ],
         ),
       ),
     );
@@ -628,52 +619,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Color? iconColor,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : const Color(0xFFF1F5F9),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
-              child: icon is IconData
-                  ? Icon(
-                      icon,
-                      color: iconColor ??
-                          (isDark ? Colors.white : const Color(0xFF1E293B)),
-                      size: 20,
-                    )
-                  : HugeIcon(
-                      icon: icon,
-                      color: iconColor ??
-                          (isDark ? Colors.white : const Color(0xFF1E293B)),
-                      size: 20,
-                      strokeWidth: 2.0,
-                    ),
-            ),
+            child: icon is IconData
+                ? Icon(
+                    icon,
+                    color: iconColor ??
+                        (isDark ? Colors.white : Colors.black87),
+                    size: 20,
+                  )
+                : HugeIcon(
+                    icon: icon,
+                    color: iconColor ??
+                        (isDark ? Colors.white : Colors.black87),
+                    size: 20,
+                  ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               title,
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontFamily: 'Inter',
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
           ),
           Switch.adaptive(
             value: value,
-            activeColor: AppColors.primary,
+            thumbColor: WidgetStateProperty.all(Colors.white),
+            activeColor: Colors.white,
+            activeTrackColor: Colors.blue,
             inactiveThumbColor: Colors.white,
-            inactiveTrackColor:
-                isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+            inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
             trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
             thumbIcon: WidgetStateProperty.all(
               const Icon(Icons.circle, color: Colors.transparent),
@@ -729,6 +718,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: color,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
+                      fontFamily: 'Inter',
                     ),
                   ),
                 ],
@@ -740,23 +730,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDivider(bool isDark) => Padding(
-        padding: const EdgeInsets.only(left: 72, right: 18),
-        child: Divider(
-          height: 1,
-          thickness: 1,
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : const Color(0xFFF1F5F9),
-        ),
+  Widget _buildDivider(bool isDark) => Divider(
+        height: 1,
+        color: isDark ? Colors.white10 : Colors.black12,
+        indent: 64,
       );
 
-  Widget _buildArrow([bool? isDark]) => Icon(
+  Widget _buildArrow([bool? isDark]) => const Icon(
         Icons.arrow_forward_ios_rounded,
+        color: Colors.grey,
         size: 14,
-        color: (isDark ?? false)
-            ? Colors.white30
-            : const Color(0xFFCBD5E1),
       );
 
   // ─── Modal Sheets & Dialogs ──────────────────────────────────
@@ -901,7 +884,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (ctx, setSwitchState) {
                   return Switch.adaptive(
                     value: _biometricEnabled,
-                    activeColor: AppColors.primary,
+                    thumbColor: WidgetStateProperty.all(Colors.white),
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.blue,
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                     trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
@@ -1297,19 +1282,18 @@ class _StatCardGlass extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.white.withValues(alpha: 0.9),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(20.0),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : Colors.white,
-                width: 1.5,
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.white.withValues(alpha: 0.4),
+                width: 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1E293B)
-                      .withValues(alpha: isDark ? 0.25 : 0.04),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
