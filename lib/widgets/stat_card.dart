@@ -60,12 +60,12 @@ class _StatCardState extends State<StatCard> {
             decoration: BoxDecoration(
               color: isDark
                   ? Colors.white.withValues(alpha: _isHovered ? 0.08 : 0.05)
-                  : Colors.white,
+                  : Colors.white.withValues(alpha: _isHovered ? 0.6 : 0.45),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: _isHovered
-                    ? widget.accentColor.withValues(alpha: 0.4)
-                    : (isDark ? AppColors.glassBorder : Colors.black.withValues(alpha: 0.06)),
+                    ? widget.accentColor.withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: isDark ? 0.15 : 0.65),
                 width: 1.2,
               ),
               boxShadow: [
@@ -74,7 +74,7 @@ class _StatCardState extends State<StatCard> {
                       ? widget.accentColor.withValues(alpha: isDark ? 0.15 : 0.1)
                       : (isDark
                           ? Colors.black.withValues(alpha: 0.15)
-                          : Colors.black.withValues(alpha: 0.04)),
+                          : Colors.black.withValues(alpha: 0.05)),
                   blurRadius: _isHovered ? 24 : 16,
                   offset: Offset(0, _isHovered ? 12 : 6),
                 ),

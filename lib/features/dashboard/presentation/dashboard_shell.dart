@@ -44,16 +44,57 @@ class _DashboardShellState extends State<DashboardShell> {
               isDark ? AppColors.darkBackground : AppColors.lightBackground,
           extendBody: true,
           bottomNavigationBar: isDesktop ? null : _buildBottomNav(context),
-          body: SafeArea(
-            bottom: false,
-            child: isDesktop
-                ? Row(
-                    children: [
-                      _buildNavigationRail(context, isDark),
-                      Expanded(child: _buildContent(context, isDesktop, isDark)),
-                    ],
-                  )
-                : _buildContent(context, isDesktop, isDark),
+          body: Stack(
+            children: [
+              // Ambient soft radiant blobs for realistic frosted glass refraction
+              Positioned(
+                top: -80,
+                right: -60,
+                child: Container(
+                  width: 320,
+                  height: 320,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.12),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.2, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 80,
+                left: -60,
+                child: Container(
+                  width: 320,
+                  height: 320,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF4ECDC4).withValues(alpha: isDark ? 0.14 : 0.08),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.2, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              SafeArea(
+                bottom: false,
+                child: isDesktop
+                    ? Row(
+                        children: [
+                          _buildNavigationRail(context, isDark),
+                          Expanded(child: _buildContent(context, isDesktop, isDark)),
+                        ],
+                      )
+                    : _buildContent(context, isDesktop, isDark),
+              ),
+            ],
           ),
         );
       },
@@ -81,12 +122,10 @@ class _DashboardShellState extends State<DashboardShell> {
         child: Container(
           width: 220,
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
+            color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white.withValues(alpha: 0.55),
             border: Border(
               right: BorderSide(
-                color: isDark
-                    ? AppColors.glassBorder
-                    : Colors.black.withValues(alpha: 0.06),
+                color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.7),
               ),
             ),
           ),

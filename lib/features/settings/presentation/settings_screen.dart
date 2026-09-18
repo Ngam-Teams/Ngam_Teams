@@ -317,26 +317,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   end: Alignment.bottomRight,
                   colors: [
                     AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.12),
-                    AppColors.secondary.withValues(alpha: isDark ? 0.08 : 0.04),
+                    AppColors.secondary.withValues(alpha: isDark ? 0.08 : 0.06),
                   ],
                 ),
-                color: isDark ? null : Colors.white,
+                color: isDark ? null : Colors.white.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: isDark
-                      ? AppColors.glassBorder
-                      : Colors.black.withValues(alpha: 0.07),
+                  color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.65),
                   width: 1.2,
                 ),
-                boxShadow: isDark
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -498,17 +494,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: isDark
               ? Colors.white.withValues(alpha: 0.04)
-              : Colors.white,
+              : Colors.white.withValues(alpha: 0.45),
           borderRadius: BorderRadius.circular(24.0),
           border: Border.all(
-            color: isDark
-                ? AppColors.glassBorder
-                : Colors.black.withValues(alpha: 0.07),
+            color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.65),
             width: 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -1251,17 +1245,15 @@ class _StatCardGlass extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.04)
-                : Colors.white,
+                : Colors.white.withValues(alpha: 0.45),
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
-              color: isDark
-                  ? AppColors.glassBorder
-                  : Colors.black.withValues(alpha: 0.07),
+              color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.65),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+                color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.05),
                 blurRadius: 14,
                 offset: const Offset(0, 4),
               ),

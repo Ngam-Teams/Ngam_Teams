@@ -75,5 +75,15 @@ class AppColors {
   static Color glass(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
           ? Colors.white.withValues(alpha: 0.04)
-          : Colors.white.withValues(alpha: 0.7);
+          : Colors.white.withValues(alpha: 0.45);
+
+  static Color glassBg(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.white.withValues(alpha: 0.45);
+
+  static Color glassBorderColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white.withValues(alpha: 0.15)
+          : Colors.white.withValues(alpha: 0.65);
 }
