@@ -25,7 +25,7 @@ class AppColors {
   static const Color darkCardBg = Color(0xFF1A1A28);
 
   // ─── Surfaces (Light Defaults) ───────────────────────────────
-  static const Color lightBackground = Color(0xFFF4F6FB);
+  static const Color lightBackground = Color(0xFFF8F9FA);
   static const Color lightSurface = Colors.white;
   static const Color lightSurfaceLight = Color(0xFFF8FAFC);
   static const Color lightCardBg = Colors.white;

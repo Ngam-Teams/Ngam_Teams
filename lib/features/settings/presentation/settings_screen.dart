@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/cupertino.dart' show CupertinoSwitch;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -319,19 +320,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               decoration: BoxDecoration(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.white.withValues(alpha: 0.25),
+                    : Colors.white.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(20.0),
                 border: Border.all(
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.white.withValues(alpha: 0.4),
-                  width: 1.0,
+                      : Colors.white,
+                  width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                     blurRadius: 16,
-                    offset: const Offset(0, 6),
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -509,19 +510,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.05)
-                : Colors.white.withValues(alpha: 0.25),
+                : Colors.white.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.white.withValues(alpha: 0.4),
-              width: 1.0,
+                  : Colors.white,
+              width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                 blurRadius: 16,
-                offset: const Offset(0, 6),
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -656,17 +657,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-          Switch.adaptive(
+          CupertinoSwitch(
             value: value,
-            thumbColor: WidgetStateProperty.all(Colors.white),
-            activeColor: Colors.white,
             activeTrackColor: Colors.blue,
-            inactiveThumbColor: Colors.white,
             inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-            thumbIcon: WidgetStateProperty.all(
-              const Icon(Icons.circle, color: Colors.transparent),
-            ),
             onChanged: onChanged,
           ),
         ],
@@ -882,17 +876,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: 'Use fingerprint or face recognition',
               trailing: StatefulBuilder(
                 builder: (ctx, setSwitchState) {
-                  return Switch.adaptive(
+                  return CupertinoSwitch(
                     value: _biometricEnabled,
-                    thumbColor: WidgetStateProperty.all(Colors.white),
-                    activeColor: Colors.white,
                     activeTrackColor: Colors.blue,
-                    inactiveThumbColor: Colors.white,
                     inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-                    trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                    thumbIcon: WidgetStateProperty.all(
-                      const Icon(Icons.circle, color: Colors.transparent),
-                    ),
                     onChanged: (val) {
                       setSwitchState(() => _biometricEnabled = val);
                       setState(() => _biometricEnabled = val);
@@ -1283,41 +1270,30 @@ class _StatCardGlass extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.25),
+                  : Colors.white.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(20.0),
               border: Border.all(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.white.withValues(alpha: 0.4),
-                width: 1.0,
+                    : Colors.white,
+                width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                   blurRadius: 16,
-                  offset: const Offset(0, 6),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Column(
               children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: isDark ? 0.2 : 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: HugeIcon(
-                      icon: icon,
-                      size: 19,
-                      color: accentColor,
-                      strokeWidth: 2.0,
-                    ),
-                  ),
+                HugeIcon(
+                  icon: icon,
+                  size: 22,
+                  color: isDark ? Colors.white70 : const Color(0xFF334155),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Text(
                   value,
                   style: TextStyle(
@@ -1325,6 +1301,7 @@ class _StatCardGlass extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
                     letterSpacing: -0.3,
+                    fontFamily: 'Inter',
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1332,9 +1309,10 @@ class _StatCardGlass extends StatelessWidget {
                   label,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                    fontFamily: 'Inter',
                   ),
                 ),
               ],
