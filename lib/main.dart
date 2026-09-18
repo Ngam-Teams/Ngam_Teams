@@ -1,20 +1,33 @@
-import 'package:flutter/material.dart';
+// =============================================================================
+// main.dart
+// Entry point for Ngam Teams – Staff Portal.
+// Bootstraps the app, applies the dark glassmorphism theme, and wires GoRouter.
+// =============================================================================
 
-void main() {
-  runApp(const MainApp());
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: '.env');
+
+  runApp(const NgamTeamsApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class NgamTeamsApp extends StatelessWidget {
+  const NgamTeamsApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return MaterialApp.router(
+      title: 'Ngam Teams',
+      debugShowCheckedModeBanner: false,
+      routerConfig: appRouter,
+      theme: AppTheme.darkTheme,
     );
   }
 }

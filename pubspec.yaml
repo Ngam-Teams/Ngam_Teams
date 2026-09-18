@@ -1,5 +1,5 @@
 name: ngam_teams
-description: "A new Flutter project."
+description: "Ngam Teams – Staff Portal for the Ngam ecosystem."
 publish_to: 'none'
 version: 0.1.0
 
@@ -10,6 +10,21 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Supabase backend
+  supabase_flutter: ^2.8.4
+
+  # Navigation
+  go_router: ^15.1.2
+
+  # UI utilities
+  google_fonts: ^6.2.1
+  hugeicons: ^1.1.7
+  liquid_glass_widgets: 0.5.0
+
+  # Utilities
+  flutter_dotenv: ^6.0.1
+  intl: ^0.20.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -17,3 +32,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env
