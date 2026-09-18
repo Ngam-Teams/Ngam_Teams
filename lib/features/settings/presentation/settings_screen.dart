@@ -29,6 +29,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _biometricEnabled = true;
 
+  @override
+  void initState() {
+    super.initState();
+    // Forces a clean re-render after the first frame so GlassContainer shaders
+    // establish layout bounds and bind textures immediately without user interaction.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   void _navigateToProfile() {
     Navigator.of(context).push(
       MaterialPageRoute(

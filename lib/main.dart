@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -14,6 +15,9 @@ import 'core/state/app_settings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize and pre-warm Liquid Glass shader pipeline (prevents dim/glitch on first load)
+  await LiquidGlassWidgets.initialize();
 
   // Initialize persisted theme & localization preferences
   await AppSettings.instance.init();
