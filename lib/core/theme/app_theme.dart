@@ -108,6 +108,22 @@ class AppTheme {
       side: BorderSide.none,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+        return Colors.white;
+      }),
+      trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return Colors.grey.shade800;
+      }),
+      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+      thumbIcon: WidgetStateProperty.all(
+        const Icon(Icons.circle, color: Colors.transparent),
+      ),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
   );
 
   // ─── Light Theme ────────────────────────────────────────────
@@ -210,6 +226,22 @@ class AppTheme {
       ),
       side: BorderSide.none,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+        return Colors.white;
+      }),
+      trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return Colors.grey.shade300;
+      }),
+      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+      thumbIcon: WidgetStateProperty.all(
+        const Icon(Icons.circle, color: Colors.transparent),
+      ),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     ),
   );
 }

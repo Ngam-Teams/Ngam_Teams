@@ -26,6 +26,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
+  bool _biometricEnabled = true;
 
   void _navigateToProfile() {
     Navigator.of(context).push(
@@ -599,7 +600,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.1),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(12),
             ),
             child: HugeIcon(
@@ -623,11 +626,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch.adaptive(
             value: value,
             activeColor: AppColors.primary,
-            activeTrackColor: AppColors.primary.withValues(alpha: 0.35),
-            inactiveThumbColor: isDark ? Colors.grey.shade400 : Colors.white,
-            inactiveTrackColor: isDark
-                ? Colors.white.withValues(alpha: 0.1)
-                : Colors.grey.shade300,
+            inactiveThumbColor: Colors.white,
+            inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+            thumbIcon: WidgetStateProperty.all(
+              const Icon(Icons.circle, color: Colors.transparent),
+            ),
             onChanged: onChanged,
           ),
         ],
@@ -852,10 +856,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
               HugeIcons.strokeRoundedBiometricAccess,
               'Biometric Sign-In',
               subtitle: 'Use fingerprint or face recognition',
-              trailing: Switch.adaptive(
-                value: true,
-                activeColor: AppColors.primary,
-                onChanged: (_) {},
+              trailing: StatefulBuilder(
+                builder: (ctx, setSwitchState) {
+                  return Switch.adaptive(
+                    value: _biometricEnabled,
+                    activeColor: AppColors.primary,
+                    inactiveThumbColor: Colors.white,
+                    inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+                    trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                    thumbIcon: WidgetStateProperty.all(
+                      const Icon(Icons.circle, color: Colors.transparent),
+                    ),
+                    onChanged: (val) {
+                      setSwitchState(() => _biometricEnabled = val);
+                      setState(() => _biometricEnabled = val);
+                      showGlassToast(
+                        context,
+                        val ? 'Biometric sign-in enabled' : 'Biometric disabled',
+                      );
+                    },
+                  );
+                },
               ),
             ),
             _buildDivider(isDark),
