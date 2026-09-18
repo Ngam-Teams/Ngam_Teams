@@ -66,15 +66,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.black.withValues(alpha: 0.04),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                            ),
                           ),
-                          child: const HugeIcon(
+                          child: HugeIcon(
                             icon: HugeIcons.strokeRoundedUserEdit01,
-                            color: AppColors.primary,
+                            color: isDark ? Colors.white : Colors.black87,
                             size: 18,
                           ),
                         ),
@@ -585,7 +584,7 @@ class _InfoRow extends StatelessWidget {
       children: [
         HugeIcon(
           icon: icon,
-          color: AppColors.primary,
+          color: isDark ? Colors.white70 : Colors.black54,
           size: 20,
           strokeWidth: 2.1,
         ),

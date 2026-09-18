@@ -136,7 +136,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: isDark
                           ? HugeIcons.strokeRoundedMoon02
                           : HugeIcons.strokeRoundedSun01,
-                      iconColor: AppColors.primary,
                       title: context.tr('settings.dark_mode'),
                       value: AppSettings.instance.isDarkMode,
                       onChanged: (v) {
