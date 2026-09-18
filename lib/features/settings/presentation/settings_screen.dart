@@ -1,8 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart' show CupertinoSwitch;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/state/app_settings.dart';
@@ -309,173 +310,167 @@ class _SettingsScreenState extends State<SettingsScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: _navigateToProfile,
-        borderRadius: BorderRadius.circular(20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20.0),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.white.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(20.0),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.white,
-                  width: 1.2,
+        borderRadius: BorderRadius.circular(24),
+        child: GlassContainer(
+          useOwnLayer: true,
+          quality: GlassQuality.standard,
+          shape: LiquidRoundedSuperellipse(borderRadius: 24.0),
+          settings: _getGlassSettings(isDark),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(24.0),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.6),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Avatar with rich gradient & shadow
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2563EB), Color(0xFF38BDF8)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.35),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+              ],
+            ),
+            child: Row(
+              children: [
+                // Avatar with rich gradient & shadow
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2563EB), Color(0xFF38BDF8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'AH',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                          letterSpacing: 0.5,
-                        ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'AH',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                ),
+                const SizedBox(width: 16),
 
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                'Ahmad Haziq',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: isDark
-                                      ? Colors.white
-                                      : Colors.black87,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.3,
-                                  fontFamily: 'Inter',
-                                ),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Ahmad Haziq',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.white
+                                    : Colors.black87,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.3,
+                                fontFamily: 'Inter',
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
                                 color: const Color(0xFF10B981)
-                                    .withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(0xFF10B981)
-                                      .withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF10B981),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    context.tr('profile.active'),
-                                    style: const TextStyle(
-                                      color: Color(0xFF059669),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      fontFamily: 'Inter',
-                                    ),
-                                  ),
-                                ],
+                                    .withValues(alpha: 0.3),
+                                width: 1,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Senior Developer • Engineering',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.6)
-                                : const Color(0xFF64748B),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Inter',
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  context.tr('profile.active'),
+                                  style: const TextStyle(
+                                    color: Color(0xFF059669),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: 'Inter',
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Senior Developer • Engineering',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.6)
+                              : const Color(0xFF64748B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Inter',
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'ahmad.haziq@ngam.my',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.38)
-                                : const Color(0xFF94A3B8),
-                            fontSize: 12,
-                            fontFamily: 'Inter',
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'ahmad.haziq@ngam.my',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.38)
+                              : const Color(0xFF94A3B8),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
 
-                  // Action arrow
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
+                // Action arrow
+                const SizedBox(width: 8),
+                _buildArrow(),
+              ],
             ),
           ),
         ),
@@ -484,50 +479,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // ─── Section Header ──────────────────────────────────────────
-  Widget _buildSectionHeader(String title, [bool? isDark]) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 12),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.grey,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.2,
-          fontFamily: 'Inter',
+  Widget _buildSectionHeader(String title, [bool? isDark]) => Padding(
+        padding: const EdgeInsets.only(left: 8, bottom: 12),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
         ),
-      ),
+      );
+
+  // ─── Glass Settings ──────────────────────────────────────────
+  LiquidGlassSettings _getGlassSettings(bool isDark) {
+    return LiquidGlassSettings(
+      thickness: 0.1,
+      blur: 15,
+      refractiveIndex: 1.0,
+      glassColor: Colors.transparent,
+      lightAngle: 45.0,
+      lightIntensity: isDark ? 0.1 : 0.2,
+      ambientStrength: 1.0,
+      saturation: 1.0,
+      chromaticAberration: 0.0,
     );
   }
 
   // ─── Glass Container Section ─────────────────────────────────
   Widget _buildGlassSection(bool isDark, Widget child) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20.0),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.white.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(20.0),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.white,
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    return GlassContainer(
+      useOwnLayer: true,
+      quality: GlassQuality.standard,
+      shape: LiquidRoundedSuperellipse(borderRadius: 24.0),
+      settings: _getGlassSettings(isDark),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.white.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(24.0),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.6),
+            width: 1.0,
           ),
-          child: child,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
+        child: child,
       ),
     );
   }
@@ -540,75 +548,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? subtitle,
     Widget? trailing,
     VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: icon is IconData
-                  ? Icon(
-                      icon,
-                      color: isDark ? Colors.white : Colors.black87,
-                      size: 20,
-                    )
-                  : HugeIcon(
-                      icon: icon,
-                      color: isDark ? Colors.white : Colors.black87,
-                      size: 20,
-                    ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter',
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+  }) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                        fontFamily: 'Inter',
+                  child: icon is IconData
+                      ? Icon(
+                          icon,
+                          color: isDark ? Colors.white : Colors.black87,
+                          size: 20,
+                        )
+                      : HugeIcon(
+                          icon: icon,
+                          color: isDark ? Colors.white : Colors.black87,
+                          size: 20,
+                        ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
                       ),
-                    ),
-                  ],
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing != null) ...[
+                  trailing,
+                  const SizedBox(width: 8),
                 ],
-              ),
+                if (trailing == null) _buildArrow(),
+              ],
             ),
-            if (trailing != null)
-              trailing
-            else
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: Colors.grey,
-                size: 14,
-              ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 
   // ─── Toggle Tile ─────────────────────────────────────────────
   Widget _buildToggleTile({
@@ -620,7 +625,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Color? iconColor,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Container(
@@ -650,9 +655,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(
               title,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Inter',
                 color: isDark ? Colors.white : Colors.black87,
               ),
             ),
@@ -660,7 +664,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           CupertinoSwitch(
             value: value,
             activeTrackColor: Colors.blue,
-            inactiveTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+            inactiveTrackColor:
+                isDark ? Colors.grey.shade800 : Colors.grey.shade300,
             onChanged: onChanged,
           ),
         ],
@@ -676,47 +681,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required dynamic icon,
     required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: isDark ? 0.12 : 0.08),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: color.withValues(alpha: isDark ? 0.25 : 0.2),
-                  width: 1.2,
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassContainer(
+        useOwnLayer: true,
+        quality: GlassQuality.standard,
+        shape: LiquidRoundedSuperellipse(borderRadius: 24.0),
+        settings: _getGlassSettings(isDark),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: isDark ? 0.1 : 0.15),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: color.withValues(alpha: isDark ? 0.3 : 0.5),
+              width: 1.0,
+            ),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                HugeIcon(
+                  icon: icon,
+                  color: color,
+                  size: 20,
+                  strokeWidth: 2.0,
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  HugeIcon(
-                    icon: icon,
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
                     color: color,
-                    size: 20,
-                    strokeWidth: 2.0,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -724,16 +726,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDivider(bool isDark) => Divider(
-        height: 1,
-        color: isDark ? Colors.white10 : Colors.black12,
-        indent: 64,
+  Widget _buildDivider(bool isDark) => Padding(
+        padding: const EdgeInsets.only(left: 60, right: 16),
+        child: Divider(
+          height: 1,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
+        ),
       );
 
-  Widget _buildArrow([bool? isDark]) => const Icon(
-        Icons.arrow_forward_ios_rounded,
+  Widget _buildArrow([bool? isDark]) => const HugeIcon(
+        icon: HugeIcons.strokeRoundedArrowRight01,
         color: Colors.grey,
-        size: 14,
+        size: 20,
       );
 
   // ─── Modal Sheets & Dialogs ──────────────────────────────────
@@ -1242,7 +1248,7 @@ All records are protected using enterprise-grade encryption at rest and in trans
 ''';
 }
 
-// ─── Stat Card Glass Widget ────────────────────────────────────
+// ─── Kad Stat jenis Glass ────────────────────────────────────
 class _StatCardGlass extends StatelessWidget {
   final String label;
   final String value;
@@ -1261,62 +1267,61 @@ class _StatCardGlass extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(20.0),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.white,
-                width: 1.2,
+      child: GlassContainer(
+        useOwnLayer: true,
+        quality: GlassQuality.standard,
+        shape: LiquidRoundedSuperellipse(borderRadius: 24.0),
+        settings: LiquidGlassSettings(
+          thickness: 0.1,
+          blur: 15,
+          refractiveIndex: 1.0,
+          glassColor: Colors.transparent,
+          lightAngle: 45.0,
+          lightIntensity: isDark ? 0.1 : 0.2,
+          ambientStrength: 1.0,
+          saturation: 1.0,
+          chromaticAberration: 0.0,
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(24.0),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.6),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
+            ],
+          ),
+          child: Column(
+            children: [
+              HugeIcon(icon: icon, size: 22, color: AppColors.primary),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: GoogleFonts.outfit(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : Colors.black87,
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                HugeIcon(
-                  icon: icon,
-                  size: 22,
-                  color: isDark ? Colors.white70 : const Color(0xFF334155),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? Colors.white54 : Colors.black54,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    letterSpacing: -0.3,
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white54 : const Color(0xFF64748B),
-                    fontFamily: 'Inter',
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
