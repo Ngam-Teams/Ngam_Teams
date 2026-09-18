@@ -4,7 +4,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../core/theme/app_colors.dart';
 
 /// Frosted-glass statistic card with hover micro-interactions.
-/// Copied from Ngam Admin's stat_card.dart.
+/// Theme-adaptive for both dark glassmorphism and clean light mode.
 class StatCard extends StatefulWidget {
   final String label;
   final String value;
@@ -30,6 +30,8 @@ class _StatCardState extends State<StatCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -41,13 +43,13 @@ class _StatCardState extends State<StatCard> {
           useOwnLayer: true,
           quality: GlassQuality.standard,
           shape: const LiquidRoundedSuperellipse(borderRadius: 24.0),
-          settings: const LiquidGlassSettings(
+          settings: LiquidGlassSettings(
             thickness: 0.1,
             blur: 15.0,
             refractiveIndex: 1.0,
             glassColor: Colors.transparent,
             lightAngle: 45.0,
-            lightIntensity: 0.1,
+            lightIntensity: isDark ? 0.1 : 0.2,
             ambientStrength: 1.0,
             saturation: 1.0,
             chromaticAberration: 0.0,
@@ -56,21 +58,25 @@ class _StatCardState extends State<StatCard> {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: _isHovered ? 0.08 : 0.05),
+              color: isDark
+                  ? Colors.white.withValues(alpha: _isHovered ? 0.08 : 0.05)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: _isHovered
                     ? widget.accentColor.withValues(alpha: 0.4)
-                    : AppColors.glassBorder,
+                    : (isDark ? AppColors.glassBorder : Colors.black.withValues(alpha: 0.06)),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: widget.accentColor.withValues(
-                    alpha: _isHovered ? 0.15 : 0.0,
-                  ),
+                  color: _isHovered
+                      ? widget.accentColor.withValues(alpha: isDark ? 0.15 : 0.1)
+                      : (isDark
+                          ? Colors.black.withValues(alpha: 0.15)
+                          : Colors.black.withValues(alpha: 0.04)),
                   blurRadius: _isHovered ? 24 : 16,
-                  offset: Offset(0, _isHovered ? 12 : 8),
+                  offset: Offset(0, _isHovered ? 12 : 6),
                 ),
               ],
             ),
@@ -84,7 +90,7 @@ class _StatCardState extends State<StatCard> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: widget.accentColor.withValues(alpha: 0.18),
+                        color: widget.accentColor.withValues(alpha: isDark ? 0.18 : 0.12),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: widget.accentColor.withValues(alpha: 0.3),
@@ -104,7 +110,7 @@ class _StatCardState extends State<StatCard> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.greenAccent.withValues(alpha: 0.12),
+                          color: Colors.greenAccent.withValues(alpha: isDark ? 0.12 : 0.15),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: Colors.greenAccent.withValues(alpha: 0.25),
@@ -114,7 +120,7 @@ class _StatCardState extends State<StatCard> {
                           widget.subtitle!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.greenAccent.withValues(alpha: 0.9),
+                            color: isDark ? Colors.greenAccent.withValues(alpha: 0.9) : Colors.green.shade800,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -126,7 +132,9 @@ class _StatCardState extends State<StatCard> {
                   widget.label,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.65),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.65)
+                        : const Color(0xFF64748B),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
@@ -134,10 +142,10 @@ class _StatCardState extends State<StatCard> {
                 const SizedBox(height: 6),
                 Text(
                   widget.value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                     letterSpacing: -1.0,
                   ),
                 ),

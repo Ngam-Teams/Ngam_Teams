@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ─── Welcome Header ───────────────────────────────────
-          _buildWelcomeHeader(),
+          _buildWelcomeHeader(context),
           const SizedBox(height: 24),
 
           // ─── Quick Stats Row ──────────────────────────────────
@@ -65,24 +65,27 @@ class HomeScreen extends StatelessWidget {
             title: 'Recent Announcements',
             icon: HugeIcons.strokeRoundedMegaphone01,
             child: Column(
-              children: [
+              children: const [
                 _AnnouncementPreview(
                   title: 'Office Closure — Hari Raya',
-                  body: 'The office will be closed from 15th–17th October. Enjoy the holidays!',
+                  body:
+                      'The office will be closed from 15th–17th October. Enjoy the holidays!',
                   date: 'Today',
                   isPinned: true,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _AnnouncementPreview(
                   title: 'New Staff Onboarding',
-                  body: 'Welcome our new team members joining this month. Please help them settle in.',
+                  body:
+                      'Welcome our new team members joining this month. Please help them settle in.',
                   date: '2 days ago',
                   isPinned: false,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _AnnouncementPreview(
                   title: 'Monthly Team Meeting',
-                  body: 'Reminder: Monthly meeting this Friday at 3 PM in the conference room.',
+                  body:
+                      'Reminder: Monthly meeting this Friday at 3 PM in the conference room.',
                   date: '4 days ago',
                   isPinned: false,
                 ),
@@ -96,16 +99,41 @@ class HomeScreen extends StatelessWidget {
             title: 'This Week',
             icon: HugeIcons.strokeRoundedCalendar03,
             child: Column(
-              children: [
-                _WeekRow(day: 'Mon', status: 'Present', time: '09:02 – 18:00', color: AppColors.success),
-                const SizedBox(height: 12),
-                _WeekRow(day: 'Tue', status: 'Present', time: '08:55 – 18:15', color: AppColors.success),
-                const SizedBox(height: 12),
-                _WeekRow(day: 'Wed', status: 'Present', time: '09:10 – 18:05', color: AppColors.success),
-                const SizedBox(height: 12),
-                _WeekRow(day: 'Thu', status: 'Today', time: '09:00 – …', color: AppColors.primary),
-                const SizedBox(height: 12),
-                _WeekRow(day: 'Fri', status: '—', time: '—', color: AppColors.textTertiary),
+              children: const [
+                _WeekRow(
+                  day: 'Mon',
+                  status: 'Present',
+                  time: '09:02 – 18:00',
+                  color: AppColors.success,
+                ),
+                SizedBox(height: 12),
+                _WeekRow(
+                  day: 'Tue',
+                  status: 'Present',
+                  time: '08:55 – 18:15',
+                  color: AppColors.success,
+                ),
+                SizedBox(height: 12),
+                _WeekRow(
+                  day: 'Wed',
+                  status: 'Present',
+                  time: '09:10 – 18:05',
+                  color: AppColors.success,
+                ),
+                SizedBox(height: 12),
+                _WeekRow(
+                  day: 'Thu',
+                  status: 'Today',
+                  time: '09:00 – …',
+                  color: AppColors.primary,
+                ),
+                SizedBox(height: 12),
+                _WeekRow(
+                  day: 'Fri',
+                  status: '—',
+                  time: '—',
+                  color: AppColors.textTertiary,
+                ),
               ],
             ),
           ),
@@ -114,7 +142,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWelcomeHeader() {
+  Widget _buildWelcomeHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -127,12 +157,27 @@ class HomeScreen extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primary.withValues(alpha: 0.2),
-                AppColors.secondary.withValues(alpha: 0.1),
+                AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.12),
+                AppColors.secondary.withValues(alpha: isDark ? 0.1 : 0.05),
               ],
             ),
+            color: isDark ? null : Colors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.glassBorder, width: 1.2),
+            border: Border.all(
+              color: isDark
+                  ? AppColors.glassBorder
+                  : Colors.black.withValues(alpha: 0.06),
+              width: 1.2,
+            ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,19 +208,23 @@ class HomeScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Good Morning 👋',
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF64748B),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         'Ahmad Haziq',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5,
@@ -187,7 +236,8 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -229,7 +279,7 @@ class HomeScreen extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= 600) {
-          return Row(
+          return const Row(
             children: [
               Expanded(
                 child: StatCard(
@@ -240,7 +290,7 @@ class HomeScreen extends StatelessWidget {
                   accentColor: AppColors.success,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: StatCard(
                   label: 'Leave Balance',
@@ -253,7 +303,7 @@ class HomeScreen extends StatelessWidget {
             ],
           );
         }
-        return Column(
+        return const Column(
           children: [
             StatCard(
               label: 'Attendance Rate',
@@ -262,7 +312,7 @@ class HomeScreen extends StatelessWidget {
               icon: HugeIcons.strokeRoundedChartIncrease,
               accentColor: AppColors.success,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             StatCard(
               label: 'Leave Balance',
               value: '12',
@@ -337,15 +387,21 @@ class _AnnouncementPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isPinned
               ? AppColors.warning.withValues(alpha: 0.3)
-              : Colors.white.withValues(alpha: 0.08),
+              : (isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.grey.shade200),
         ),
       ),
       child: Column(
@@ -355,7 +411,8 @@ class _AnnouncementPreview extends StatelessWidget {
             children: [
               if (isPinned) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -363,14 +420,19 @@ class _AnnouncementPreview extends StatelessWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.push_pin_rounded, color: AppColors.warning, size: 12),
+                      HugeIcon(
+                        icon: HugeIcons.strokeRoundedPin,
+                        color: AppColors.warning,
+                        size: 12,
+                      ),
                       SizedBox(width: 4),
                       Text(
-                        'Pinned',
+                        'PINNED',
                         style: TextStyle(
                           color: AppColors.warning,
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
@@ -381,11 +443,20 @@ class _AnnouncementPreview extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
+                ),
+              ),
+              Text(
+                date,
+                style: TextStyle(
+                  color: isDark
+                      ? Colors.white38
+                      : const Color(0xFF94A3B8),
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -393,21 +464,12 @@ class _AnnouncementPreview extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             body,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.6)
+                  : const Color(0xFF64748B),
               fontSize: 13,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            date,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.35),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              height: 1.4,
             ),
           ),
         ],
@@ -432,14 +494,16 @@ class _WeekRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         SizedBox(
           width: 40,
           child: Text(
             day,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: isDark ? Colors.white70 : const Color(0xFF475569),
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -467,7 +531,9 @@ class _WeekRow extends StatelessWidget {
         Text(
           time,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.5)
+                : const Color(0xFF64748B),
             fontSize: 13,
           ),
         ),

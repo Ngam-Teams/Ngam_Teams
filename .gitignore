@@ -43,3 +43,45 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Large Files & Heap Dumps (e.g. JVM dumps >100MB)
+*.hprof
+hs_err_pid*
+replay_pid*
+
+# Keystores & Certificates
+*.jks
+*.keystore
+*.p12
+*.key
+*.mobileprovision
+
+# Compiled Binaries & Archives
+*.apk
+*.aab
+*.aar
+*.ipa
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Android local configurations
+/android/.gradle/
+/android/captures/
+/android/local.properties
+
+# iOS specific
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/Flutter/Flutter.framework
+**/ios/**/Flutter/Flutter.podspec
+**/ios/**/profile
+**/ios/**/flutter_export_environment.sh
+**/ios/**/Generated.xcconfig
+**/ios/**/Pods.xcodeproj

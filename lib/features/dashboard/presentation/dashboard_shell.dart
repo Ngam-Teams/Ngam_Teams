@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/localization/app_translations.dart';
 import '../../../widgets/bottom_nav.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../announcements/presentation/announcements_screen.dart';
 import '../../attendance/presentation/attendance_screen.dart';
 import '../../leave/presentation/leave_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../settings/presentation/settings_screen.dart';
 
-/// Master dashboard layout — same pattern as Ngam Admin.
+/// Master dashboard layout — theme-aware & bilingual.
 /// NavigationRail on desktop, pill-sliding BottomNav on mobile.
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key});
@@ -22,57 +24,72 @@ class DashboardShell extends StatefulWidget {
 class _DashboardShellState extends State<DashboardShell> {
   int _selectedIndex = 0;
 
-  static const _navItems = [
-    (icon: HugeIcons.strokeRoundedHome11, label: 'Home'),
-    (icon: HugeIcons.strokeRoundedMegaphone01, label: 'Notices'),
-    (icon: HugeIcons.strokeRoundedClock01, label: 'Attend'),
-    (icon: HugeIcons.strokeRoundedCalendar03, label: 'Leave'),
-    (icon: HugeIcons.strokeRoundedUser, label: 'Profile'),
-  ];
+  List<({dynamic icon, String label})> _getNavItems(BuildContext context) => [
+        (icon: HugeIcons.strokeRoundedHome11, label: context.tr('nav.home')),
+        (icon: HugeIcons.strokeRoundedMegaphone01, label: context.tr('nav.notices')),
+        (icon: HugeIcons.strokeRoundedClock01, label: context.tr('nav.attend')),
+        (icon: HugeIcons.strokeRoundedCalendar03, label: context.tr('nav.leave')),
+        (icon: HugeIcons.strokeRoundedSettings01, label: context.tr('nav.settings')),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 800;
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor:
+              isDark ? AppColors.darkBackground : AppColors.lightBackground,
           extendBody: true,
-          bottomNavigationBar: isDesktop ? null : _buildBottomNav(),
+          bottomNavigationBar: isDesktop ? null : _buildBottomNav(context),
           body: SafeArea(
             bottom: false,
             child: isDesktop
                 ? Row(
                     children: [
-                      _buildNavigationRail(),
-                      Expanded(child: _buildContent(isDesktop)),
+                      _buildNavigationRail(context, isDark),
+                      Expanded(child: _buildContent(context, isDesktop, isDark)),
                     ],
                   )
-                : _buildContent(isDesktop),
+                : _buildContent(context, isDesktop, isDark),
           ),
         );
       },
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(BuildContext context) {
+    final navItems = _getNavItems(context);
     return BottomNav(
       currentIndex: _selectedIndex,
       onTap: (index) => setState(() => _selectedIndex = index),
-      items: _navItems
+      items: navItems
           .map((item) => NavItem(icon: item.icon, title: item.label))
           .toList(),
     );
   }
 
-  // ─── Navigation Rail (frosted glass sidebar) ────────────────
-  Widget _buildNavigationRail() {
+  // ─── Navigation Rail (sidebar) ──────────────────────────────
+  Widget _buildNavigationRail(BuildContext context, bool isDark) {
+    final navItems = _getNavItems(context);
+
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
           width: 220,
-          color: Colors.white.withValues(alpha: 0.04),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
+            border: Border(
+              right: BorderSide(
+                color: isDark
+                    ? AppColors.glassBorder
+                    : Colors.black.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -96,19 +113,19 @@ class _DashboardShellState extends State<DashboardShell> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Ngam',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.3,
                           ),
                         ),
-                        Text(
+                        const Text(
                           'Teams',
                           style: TextStyle(
                             color: AppColors.primary,
@@ -126,7 +143,7 @@ class _DashboardShellState extends State<DashboardShell> {
               const SizedBox(height: 40),
 
               // Nav items
-              ..._navItems.asMap().entries.map((entry) {
+              ...navItems.asMap().entries.map((entry) {
                 final index = entry.key;
                 final item = entry.value;
                 final selected = index == _selectedIndex;
@@ -135,6 +152,7 @@ class _DashboardShellState extends State<DashboardShell> {
                   icon: item.icon,
                   label: item.label,
                   selected: selected,
+                  isDark: isDark,
                   onTap: () => setState(() => _selectedIndex = index),
                 );
               }),
@@ -149,7 +167,7 @@ class _DashboardShellState extends State<DashboardShell> {
   }
 
   // ─── Content Area ───────────────────────────────────────────
-  Widget _buildContent(bool isDesktop) {
+  Widget _buildContent(BuildContext context, bool isDesktop, bool isDark) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
         isDesktop ? 32 : 16,
@@ -168,9 +186,9 @@ class _DashboardShellState extends State<DashboardShell> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _pageTitle,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    _getPageTitle(context),
+                    style: TextStyle(
+                      color: isDark ? Colors.white : const Color(0xFF1E293B),
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.5,
@@ -178,15 +196,17 @@ class _DashboardShellState extends State<DashboardShell> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Staff Portal',
+                    context.tr('nav.staff_portal'),
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.4)
+                          : const Color(0xFF64748B),
                       fontSize: 14,
                     ),
                   ),
                 ],
               ),
-              _buildTopBarActions(),
+              _buildTopBarActions(context, isDark),
             ],
           ),
           const SizedBox(height: 12),
@@ -198,12 +218,12 @@ class _DashboardShellState extends State<DashboardShell> {
     );
   }
 
-  String get _pageTitle => switch (_selectedIndex) {
-        0 => 'Home',
-        1 => 'Announcements',
-        2 => 'Attendance',
-        3 => 'Leave',
-        4 => 'Profile',
+  String _getPageTitle(BuildContext context) => switch (_selectedIndex) {
+        0 => context.tr('nav.home'),
+        1 => context.tr('nav.notices'),
+        2 => context.tr('nav.attend'),
+        3 => context.tr('nav.leave'),
+        4 => context.tr('nav.settings'),
         _ => 'Teams',
       };
 
@@ -215,32 +235,39 @@ class _DashboardShellState extends State<DashboardShell> {
         AnnouncementsScreen(),
         AttendanceScreen(),
         LeaveScreen(),
-        ProfileScreen(),
+        SettingsScreen(),
       ],
     );
   }
 
-  Widget _buildTopBarActions() {
+  Widget _buildTopBarActions(BuildContext context, bool isDark) {
     return Row(
       children: [
         IconButton(
-          icon: const HugeIcon(
+          icon: HugeIcon(
             icon: HugeIcons.strokeRoundedNotification02,
-            color: Colors.white54,
+            color: isDark ? Colors.white54 : const Color(0xFF64748B),
             size: 20,
             strokeWidth: 2.1,
           ),
           onPressed: () {},
         ),
         const SizedBox(width: 8),
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.3),
-          child: const HugeIcon(
-            icon: HugeIcons.strokeRoundedUser,
-            color: AppColors.primary,
-            size: 18,
-            strokeWidth: 2.1,
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            );
+          },
+          child: CircleAvatar(
+            radius: 18,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+            child: const HugeIcon(
+              icon: HugeIcons.strokeRoundedUser,
+              color: AppColors.primary,
+              size: 18,
+              strokeWidth: 2.1,
+            ),
           ),
         ),
       ],
@@ -253,12 +280,14 @@ class _NavItem extends StatelessWidget {
   final dynamic icon;
   final String label;
   final bool selected;
+  final bool isDark;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.selected,
+    required this.isDark,
     required this.onTap,
   });
 
@@ -273,14 +302,16 @@ class _NavItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: selected
-              ? AppColors.primary.withValues(alpha: 0.18)
+              ? AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.12)
               : Colors.transparent,
         ),
         child: Row(
           children: [
             HugeIcon(
               icon: icon,
-              color: selected ? AppColors.primary : Colors.white38,
+              color: selected
+                  ? AppColors.primary
+                  : (isDark ? Colors.white38 : const Color(0xFF94A3B8)),
               size: 20,
               strokeWidth: 2.1,
             ),
@@ -288,8 +319,10 @@ class _NavItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : Colors.white54,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                color: selected
+                    ? AppColors.primary
+                    : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
                 fontSize: 14,
               ),
             ),

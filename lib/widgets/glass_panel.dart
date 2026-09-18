@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../core/theme/app_colors.dart';
 
-/// Reusable frosted-glass panel widget.
-/// Adapted from Ngam Admin's `_buildPanel` pattern.
+/// Reusable frosted-glass panel widget that adapts to dark and light themes.
 class GlassPanel extends StatelessWidget {
   final String? title;
   final dynamic icon;
@@ -23,6 +22,8 @@ class GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
@@ -30,15 +31,19 @@ class GlassPanel extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: AppColors.glassBackground,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white,
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              color: AppColors.glassBorder,
+              color: isDark
+                  ? AppColors.glassBorder
+                  : Colors.black.withValues(alpha: 0.06),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -69,8 +74,10 @@ class GlassPanel extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title!,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           letterSpacing: -0.2,
