@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/teams_supabase_service.dart';
 import '../../../widgets/glass_panel.dart';
 import '../../../widgets/glass_toast.dart';
 
@@ -19,6 +20,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   bool _isCheckedIn = false;
   String? _checkInTime;
   String? _checkOutTime;
+  List<Map<String, dynamic>> _attendanceHistory = [];
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -40,6 +42,33 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
     _updateTime();
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) => _updateTime());
+    _loadAttendance();
+  }
+
+  Future<void> _loadAttendance() async {
+    try {
+      final today = await TeamsSupabaseService.instance.fetchTodayAttendance();
+      final history = await TeamsSupabaseService.instance.fetchRecentAttendance();
+
+      if (mounted) {
+        setState(() {
+          if (today != null) {
+            final inTimeStr = today['check_in_time'];
+            final outTimeStr = today['check_out_time'];
+            _checkInTime = inTimeStr != null
+                ? DateFormat('hh:mm a').format(DateTime.parse(inTimeStr).toLocal())
+                : null;
+            _checkOutTime = outTimeStr != null
+                ? DateFormat('hh:mm a').format(DateTime.parse(outTimeStr).toLocal())
+                : null;
+            _isCheckedIn = _checkInTime != null && _checkOutTime == null;
+          }
+          _attendanceHistory = history;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading attendance in UI: $e');
+    }
   }
 
   void _updateTime() {
@@ -48,23 +77,43 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     });
   }
 
-  void _toggleCheckIn() {
+  Future<void> _toggleCheckIn() async {
     final now = DateFormat('hh:mm a').format(DateTime.now());
-    setState(() {
+    try {
       if (!_isCheckedIn) {
-        _isCheckedIn = true;
-        _checkInTime = now;
-        _checkOutTime = null;
+        await TeamsSupabaseService.instance.checkIn();
+        setState(() {
+          _isCheckedIn = true;
+          _checkInTime = now;
+          _checkOutTime = null;
+        });
+        if (mounted) showGlassToast(context, 'Checked in at $_checkInTime ✅');
       } else {
-        _isCheckedIn = false;
-        _checkOutTime = now;
+        await TeamsSupabaseService.instance.checkOut();
+        setState(() {
+          _isCheckedIn = false;
+          _checkOutTime = now;
+        });
+        if (mounted) showGlassToast(context, 'Checked out at $_checkOutTime 👋');
       }
-    });
-
-    if (_isCheckedIn) {
-      showGlassToast(context, 'Checked in at $_checkInTime ✅');
-    } else {
-      showGlassToast(context, 'Checked out at $_checkOutTime 👋');
+      _loadAttendance();
+    } catch (e) {
+      setState(() {
+        if (!_isCheckedIn) {
+          _isCheckedIn = true;
+          _checkInTime = now;
+          _checkOutTime = null;
+        } else {
+          _isCheckedIn = false;
+          _checkOutTime = now;
+        }
+      });
+      if (mounted) {
+        showGlassToast(
+          context,
+          _isCheckedIn ? 'Checked in at $_checkInTime' : 'Checked out at $_checkOutTime',
+        );
+      }
     }
   }
 
@@ -120,65 +169,65 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
           // ─── Weekly History ───────────────────────────────────
           GlassPanel(
-            title: 'Weekly History',
+            title: 'Attendance History',
             icon: HugeIcons.strokeRoundedActivity01,
-            child: Column(
-              children: [
-                _HistoryRow(
-                  date: 'Mon, Sep 14',
-                  checkIn: '09:02 AM',
-                  checkOut: '06:00 PM',
-                  status: 'Present',
-                  statusColor: AppColors.success,
-                ),
-                Divider(
-                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
-                  height: 24,
-                ),
-                _HistoryRow(
-                  date: 'Tue, Sep 15',
-                  checkIn: '08:55 AM',
-                  checkOut: '06:15 PM',
-                  status: 'Present',
-                  statusColor: AppColors.success,
-                ),
-                Divider(
-                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
-                  height: 24,
-                ),
-                _HistoryRow(
-                  date: 'Wed, Sep 16',
-                  checkIn: '09:32 AM',
-                  checkOut: '06:05 PM',
-                  status: 'Late',
-                  statusColor: AppColors.warning,
-                ),
-                Divider(
-                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
-                  height: 24,
-                ),
-                _HistoryRow(
-                  date: 'Thu, Sep 17',
-                  checkIn: _checkInTime ?? '—',
-                  checkOut: _checkOutTime ?? '—',
-                  status: _isCheckedIn ? 'Active' : (_checkInTime != null ? 'Done' : 'Pending'),
-                  statusColor: _isCheckedIn
-                      ? AppColors.primary
-                      : (_checkInTime != null ? AppColors.success : AppColors.textTertiary),
-                ),
-                Divider(
-                  color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
-                  height: 24,
-                ),
-                _HistoryRow(
-                  date: 'Fri, Sep 18',
-                  checkIn: '—',
-                  checkOut: '—',
-                  status: '—',
-                  statusColor: AppColors.textTertiary,
-                ),
-              ],
-            ),
+            child: _attendanceHistory.isEmpty
+                ? Column(
+                    children: [
+                      _HistoryRow(
+                        date: DateFormat('EEE, MMM d').format(DateTime.now()),
+                        checkIn: _checkInTime ?? '—',
+                        checkOut: _checkOutTime ?? '—',
+                        status: _isCheckedIn ? 'Active' : (_checkInTime != null ? 'Done' : 'Pending'),
+                        statusColor: _isCheckedIn
+                            ? AppColors.primary
+                            : (_checkInTime != null ? AppColors.success : AppColors.textTertiary),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      for (int i = 0; i < _attendanceHistory.length; i++) ...[
+                        if (i > 0)
+                          Divider(
+                            color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
+                            height: 24,
+                          ),
+                        Builder(
+                          builder: (context) {
+                            final item = _attendanceHistory[i];
+                            final dateStr = item['attendance_date'] ?? '';
+                            DateTime? parsedDate = DateTime.tryParse(dateStr);
+                            final displayDate = parsedDate != null
+                                ? DateFormat('EEE, MMM d').format(parsedDate)
+                                : dateStr;
+
+                            final inStr = item['check_in_time'];
+                            final outStr = item['check_out_time'];
+                            final displayIn = inStr != null
+                                ? DateFormat('hh:mm a').format(DateTime.parse(inStr).toLocal())
+                                : '—';
+                            final displayOut = outStr != null
+                                ? DateFormat('hh:mm a').format(DateTime.parse(outStr).toLocal())
+                                : '—';
+
+                            final status = (item['status'] as String? ?? 'present').toUpperCase();
+                            Color statusColor = AppColors.success;
+                            if (status == 'LATE') statusColor = AppColors.warning;
+                            if (status == 'ABSENT') statusColor = AppColors.error;
+
+                            return _HistoryRow(
+                              date: displayDate,
+                              checkIn: displayIn,
+                              checkOut: displayOut,
+                              status: status,
+                              statusColor: statusColor,
+                            );
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
           ),
         ],
       ),

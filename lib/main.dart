@@ -9,6 +9,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/state/app_settings.dart';
@@ -26,6 +28,18 @@ Future<void> main() async {
     await dotenv.load(fileName: '.env');
   } catch (_) {
     // Falls back gracefully if .env is missing in fresh clone or test runner
+  }
+
+  final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? 'https://rsueaoglsdxhzpupjljd.supabase.co';
+  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? 'sb_publishable_qP4whY5B6wxIasWOVGoPCw_vrhOXj_J';
+
+  try {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+  } catch (e) {
+    debugPrint('Supabase init error: $e');
   }
 
   runApp(const NgamTeamsApp());
