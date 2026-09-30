@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _passwordController = TextEditingController();
 
   bool _loading = false;
+  bool _isSignUpMode = false;
   bool _obscurePassword = true;
   bool _rememberMe = true;
   String? _errorMessage;
@@ -130,16 +131,26 @@ class _LoginScreenState extends State<LoginScreen>
     });
 
     try {
-      // 1. If Supabase is initialized and credentials are provided, attempt cloud sign-in
+      // 1. If Supabase is initialized and credentials are provided, attempt cloud sign-in or sign-up
       bool supabaseSuccess = false;
       try {
         final client = Supabase.instance.client;
-        final res = await client.auth.signInWithPassword(
-          email: email,
-          password: password,
-        );
-        if (res.user != null) {
-          supabaseSuccess = true;
+        if (_isSignUpMode) {
+          final res = await client.auth.signUp(
+            email: email,
+            password: password,
+          );
+          if (res.user != null) {
+            supabaseSuccess = true;
+          }
+        } else {
+          final res = await client.auth.signInWithPassword(
+            email: email,
+            password: password,
+          );
+          if (res.user != null) {
+            supabaseSuccess = true;
+          }
         }
       } catch (sbError) {
         // If Supabase is not configured or in offline demo mode, fall through to demo validation
@@ -159,7 +170,9 @@ class _LoginScreenState extends State<LoginScreen>
       if (mounted) {
         showGlassToast(
           context,
-          'Welcome back, ${email.split('@').first.toUpperCase()}!',
+          _isSignUpMode
+              ? 'Account created! Welcome, ${email.split('@').first.toUpperCase()}!'
+              : 'Welcome back, ${email.split('@').first.toUpperCase()}!',
           customIcon: Icons.verified_user_rounded,
           customColor: AppColors.success,
         );
@@ -606,10 +619,80 @@ class _LoginScreenState extends State<LoginScreen>
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                      const SizedBox(height: 18),
+
+                      // Segmented Mode Toggle (Sign In vs Register)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_isSignUpMode) {
+                                    setState(() {
+                                      _isSignUpMode = false;
+                                      _errorMessage = null;
+                                    });
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 9),
+                                  decoration: BoxDecoration(
+                                    color: !_isSignUpMode ? AppColors.primary : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    context.tr('auth.sign_in'),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: !_isSignUpMode ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!_isSignUpMode) {
+                                    setState(() {
+                                      _isSignUpMode = true;
+                                      _errorMessage = null;
+                                    });
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 9),
+                                  decoration: BoxDecoration(
+                                    color: _isSignUpMode ? AppColors.primary : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'Register (New Staff)',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: _isSignUpMode ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 22),
 
                 // ─── Error Notification Banner ──────────────────────────────
                 if (_errorMessage != null) ...[
@@ -815,7 +898,7 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                           )
                         : Text(
-                            context.tr('auth.sign_in'),
+                            _isSignUpMode ? 'Register & Connect Workplace' : context.tr('auth.sign_in'),
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,

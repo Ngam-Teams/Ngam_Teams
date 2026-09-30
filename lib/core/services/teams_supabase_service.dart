@@ -17,7 +17,7 @@ class TeamsSupabaseService {
     if (user == null) return null;
 
     try {
-      // 1. Check team_members
+      // 1. Check team_members by user_id
       final teamRes = await _client
           .from('team_members')
           .select('business_id')
@@ -27,6 +27,27 @@ class TeamsSupabaseService {
 
       if (teamRes != null && teamRes['business_id'] != null) {
         return teamRes['business_id'] as String;
+      }
+
+      // 1b. If not linked by user_id yet, check by email and auto-link to this staff user
+      if (user.email != null && user.email!.isNotEmpty) {
+        final inviteRes = await _client
+            .from('team_members')
+            .select('id, business_id')
+            .ilike('email', user.email!.trim())
+            .maybeSingle();
+
+        if (inviteRes != null && inviteRes['business_id'] != null) {
+          try {
+            await _client.from('team_members').update({
+              'user_id': user.id,
+              'status': 'active',
+            }).eq('id', inviteRes['id']);
+          } catch (e) {
+            debugPrint('Error linking team member user_id: $e');
+          }
+          return inviteRes['business_id'] as String;
+        }
       }
 
       // 2. Check if user is owner of a business
@@ -40,14 +61,8 @@ class TeamsSupabaseService {
         return bizRes['id'] as String;
       }
 
-      // 3. Fallback to any first active business (for demo/testing)
-      final anyBiz = await _client
-          .from('businesses')
-          .select('id')
-          .limit(1)
-          .maybeSingle();
-
-      return anyBiz?['id'] as String?;
+      // 3. If not linked, return null so UI prompts staff to enter Staff Code or request invite
+      return null;
     } catch (e) {
       debugPrint('Error getting business ID: $e');
       return null;
@@ -294,6 +309,149 @@ class TeamsSupabaseService {
           .eq('id', notificationId);
     } catch (e) {
       debugPrint('Error marking notification as read: $e');
+    }
+  }
+
+  // ===========================================================================
+  // STAFF PROFILE MANAGEMENT
+  // ===========================================================================
+
+  /// Fetches the current logged in staff's team member and business profile.
+  Future<Map<String, dynamic>?> fetchStaffProfile() async {
+    final user = currentUser;
+    if (user == null) return null;
+
+    try {
+      // 1. Try to find by user_id
+      var member = await _client
+          .from('team_members')
+          .select('*, businesses(business_name, business_industry, address_line, business_city, state)')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      // 2. If not linked by user_id yet, try matching by email and auto-link
+      if (member == null && user.email != null && user.email!.isNotEmpty) {
+        final emailMatch = await _client
+            .from('team_members')
+            .select('*, businesses(business_name, business_industry, address_line, business_city, state)')
+            .ilike('email', user.email!.trim())
+            .maybeSingle();
+
+        if (emailMatch != null) {
+          try {
+            await _client.from('team_members').update({
+              'user_id': user.id,
+              'status': 'active',
+            }).eq('id', emailMatch['id']);
+          } catch (e) {
+            debugPrint('Auto-link error: $e');
+          }
+          member = emailMatch;
+        }
+      }
+
+      return member != null ? Map<String, dynamic>.from(member) : null;
+    } catch (e) {
+      debugPrint('Error fetching staff profile: $e');
+      return null;
+    }
+  }
+
+  /// Updates the current staff member's info (name, phone, designation, etc.)
+  Future<void> updateStaffProfile(Map<String, dynamic> updates) async {
+    final user = currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    // First try update by user_id
+    final res = await _client
+        .from('team_members')
+        .update(updates)
+        .eq('user_id', user.id)
+        .select();
+
+    if ((res as List).isEmpty && user.email != null) {
+      // Fallback by email if user_id was not linked yet
+      final fallbackRes = await _client
+          .from('team_members')
+          .update({
+            ...updates,
+            'user_id': user.id,
+            'status': 'active',
+          })
+          .ilike('email', user.email!.trim())
+          .select();
+
+      if ((fallbackRes as List).isEmpty) {
+        throw Exception(
+          'No team record found for ${user.email}. Please link using your Staff Code first.',
+        );
+      }
+    }
+  }
+
+  /// Reliably and safely links the current logged-in staff member using a Staff Code (e.g. STF-001).
+  Future<Map<String, dynamic>> linkStaffWithCode(String rawCode) async {
+    final user = currentUser;
+    if (user == null) {
+      return {'success': false, 'message': 'You must be logged in to link your account.'};
+    }
+
+    final code = rawCode.trim().toUpperCase();
+    if (code.isEmpty) {
+      return {'success': false, 'message': 'Please enter a valid Staff Code.'};
+    }
+
+    try {
+      // 1. Try PostgreSQL RPC first if configured
+      try {
+        final rpcRes = await _client.rpc('fn_link_staff_by_code', params: {
+          'p_staff_code': code,
+          'p_user_id': user.id,
+          'p_user_email': user.email ?? '',
+        });
+        if (rpcRes != null && rpcRes is Map) {
+          final resMap = Map<String, dynamic>.from(rpcRes);
+          if (resMap['success'] == true) {
+            return resMap;
+          }
+        }
+      } catch (_) {
+        // Fallback to direct table query if RPC is not deployed yet
+      }
+
+      // 2. Direct table lookup and update
+      final member = await _client
+          .from('team_members')
+          .select('id, name, designation, businesses(id, business_name)')
+          .ilike('staff_code', code)
+          .maybeSingle();
+
+      if (member == null) {
+        return {
+          'success': false,
+          'message': 'Staff code "$code" was not found. Please verify with your store owner.',
+        };
+      }
+
+      final bizName = (member['businesses'] as Map?)?['business_name'] ?? 'your business';
+
+      await _client.from('team_members').update({
+        'user_id': user.id,
+        'status': 'active',
+        if (user.email != null && user.email!.isNotEmpty) 'email': user.email!.trim(),
+      }).eq('id', member['id']);
+
+      return {
+        'success': true,
+        'message': 'Successfully linked to $bizName!',
+        'business_name': bizName,
+      };
+    } catch (e) {
+      debugPrint('Error linking staff code: $e');
+      return {
+        'success': false,
+        'message': 'Failed to link: $e',
+      };
     }
   }
 }

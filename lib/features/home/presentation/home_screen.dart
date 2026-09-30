@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/glass_panel.dart';
@@ -25,35 +26,79 @@ class HomeScreen extends StatelessWidget {
 
           // ─── Quick Actions ────────────────────────────────────
           GlassPanel(
-            title: 'Quick Actions',
+            title: 'Operasi & Servis Staf',
             icon: HugeIcons.strokeRoundedZap,
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: _QuickActionChip(
-                    icon: HugeIcons.strokeRoundedClock01,
-                    label: 'Clock In',
-                    color: AppColors.success,
-                    onTap: () {},
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: HugeIcons.strokeRoundedCalendar01,
+                        label: 'Servis Saya',
+                        color: AppColors.primary,
+                        onTap: () => context.push('/my-services'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: HugeIcons.strokeRoundedTime02,
+                        label: 'Jadual Syif',
+                        color: const Color(0xFF26C6DA),
+                        onTap: () => context.push('/shift-roster'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: HugeIcons.strokeRoundedTask01,
+                        label: 'SOP Tugas',
+                        color: const Color(0xFF44CF6C),
+                        onTap: () => context.push('/task-checklist'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: HugeIcons.strokeRoundedCoins01,
+                        label: 'Gaji & Tip',
+                        color: const Color(0xFFF9C80E),
+                        onTap: () => context.push('/earnings'),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionChip(
-                    icon: HugeIcons.strokeRoundedCalendar03,
-                    label: 'Apply Leave',
-                    color: AppColors.info,
-                    onTap: () {},
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionChip(
-                    icon: HugeIcons.strokeRoundedNotification02,
-                    label: 'Notices',
-                    color: AppColors.warning,
-                    onTap: () {},
-                  ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: HugeIcons.strokeRoundedInvoice02,
+                        label: 'Klaim Belanja',
+                        color: const Color(0xFF10B981),
+                        onTap: () => context.push('/claims'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: HugeIcons.strokeRoundedChampion,
+                        label: 'Kudos Krew',
+                        color: const Color(0xFFF59E0B),
+                        onTap: () => context.push('/kudos'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: HugeIcons.strokeRoundedAlert02,
+                        label: 'SOS Insiden',
+                        color: const Color(0xFFEF4444),
+                        onTap: () => context.push('/incident-report'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
