@@ -26,12 +26,14 @@ class DashboardShell extends StatefulWidget {
 
 class _DashboardShellState extends State<DashboardShell> {
   int _selectedIndex = 0;
+  final Set<int> _activatedTabs = {0}; // Lazy tab loading cache
 
   @override
   void initState() {
     super.initState();
     DashboardShell.activeTabNotifier.addListener(_onTabNotifierChanged);
     _selectedIndex = DashboardShell.activeTabNotifier.value;
+    _activatedTabs.add(_selectedIndex);
   }
 
   @override
@@ -42,12 +44,18 @@ class _DashboardShellState extends State<DashboardShell> {
 
   void _onTabNotifierChanged() {
     if (mounted && _selectedIndex != DashboardShell.activeTabNotifier.value) {
-      setState(() => _selectedIndex = DashboardShell.activeTabNotifier.value);
+      setState(() {
+        _selectedIndex = DashboardShell.activeTabNotifier.value;
+        _activatedTabs.add(_selectedIndex);
+      });
     }
   }
 
   void _onTabSelected(int index) {
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+      _activatedTabs.add(index);
+    });
     DashboardShell.activeTabNotifier.value = index;
   }
 
@@ -330,12 +338,12 @@ class _DashboardShellState extends State<DashboardShell> {
   Widget _buildPageBody() {
     return IndexedStack(
       index: _selectedIndex.clamp(0, 4),
-      children: const [
-        HomeScreen(),
-        AnnouncementsScreen(),
-        AttendanceScreen(),
-        LeaveScreen(),
-        SettingsScreen(),
+      children: [
+        _activatedTabs.contains(0) ? const HomeScreen() : const SizedBox.shrink(),
+        _activatedTabs.contains(1) ? const AnnouncementsScreen() : const SizedBox.shrink(),
+        _activatedTabs.contains(2) ? const AttendanceScreen() : const SizedBox.shrink(),
+        _activatedTabs.contains(3) ? const LeaveScreen() : const SizedBox.shrink(),
+        _activatedTabs.contains(4) ? const SettingsScreen() : const SizedBox.shrink(),
       ],
     );
   }
