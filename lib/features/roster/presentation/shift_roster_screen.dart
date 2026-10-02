@@ -453,20 +453,24 @@ class _ShiftRosterScreenState extends State<ShiftRosterScreen> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      r['day'] as String,
-                      style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF1E293B),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                    Flexible(
+                      child: Text(
+                        r['day'] as String,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (isToday) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(6)),
-                        child: const Text('HARI INI', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                        child: const Text('HARI INI', style: TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ],
@@ -483,6 +487,7 @@ class _ShiftRosterScreenState extends State<ShiftRosterScreen> {
               ],
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             r['time'] as String,
             style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 11, fontWeight: FontWeight.w500),

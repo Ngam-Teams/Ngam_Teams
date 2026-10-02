@@ -68,7 +68,7 @@ class _BottomNavState extends State<BottomNav> {
                 child: GlassContainer(
                   useOwnLayer: true,
                   quality: GlassQuality.standard,
-                  shape: LiquidRoundedSuperellipse(borderRadius: 50.0),
+                  shape: const LiquidRoundedSuperellipse(borderRadius: 50.0),
                   settings: LiquidGlassSettings(
                     thickness: 0.1,
                     blur: 2.0,
@@ -190,40 +190,46 @@ class _BottomNavState extends State<BottomNav> {
                                               size: 20,
                                               strokeWidth: 2.1,
                                             ),
-                                            AnimatedSize(
-                                              duration: animDuration,
-                                              curve: animCurve,
-                                              alignment: Alignment.centerLeft,
-                                              child: isSelected
-                                                  ? AnimatedOpacity(
-                                                      duration:
-                                                          const Duration(
-                                                              milliseconds:
-                                                                  250),
-                                                      opacity:
-                                                          isSelected
-                                                              ? 1.0
-                                                              : 0.0,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                left: 6),
-                                                        child: Text(
-                                                          widget
-                                                              .items[i].title,
-                                                          maxLines: 1,
-                                                          style: TextStyle(
-                                                            color: itemColor,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w900,
-                                                            fontSize: 13,
+                                            Flexible(
+                                              child: AnimatedSize(
+                                                duration: animDuration,
+                                                curve: animCurve,
+                                                alignment: Alignment.centerLeft,
+                                                child: isSelected
+                                                    ? AnimatedOpacity(
+                                                        duration:
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    250),
+                                                        opacity:
+                                                            isSelected
+                                                                ? 1.0
+                                                                : 0.0,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 6),
+                                                          child: Text(
+                                                            widget
+                                                                .items[i].title,
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            softWrap: false,
+                                                            style: TextStyle(
+                                                              color: itemColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: 12.5,
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    )
-                                                  : const SizedBox.shrink(),
+                                                      )
+                                                    : const SizedBox.shrink(),
+                                              ),
                                             ),
                                           ],
                                         ),

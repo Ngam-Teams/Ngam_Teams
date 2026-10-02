@@ -1315,20 +1315,28 @@ class _StatCardGlass extends StatelessWidget {
             children: [
               HugeIcon(icon: icon, size: 22, color: AppColors.primary),
               const SizedBox(height: 8),
-              Text(
-                value,
-                style: GoogleFonts.outfit(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : Colors.black87,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                 ),
               ),
               const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? Colors.white54 : Colors.black54,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                  ),
                 ),
               ),
             ],

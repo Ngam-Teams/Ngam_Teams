@@ -17,12 +17,39 @@ import '../../settings/presentation/settings_screen.dart';
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key});
 
+  /// Allows programmatic tab switching across screens (e.g., jump from Home to Leave or Attend).
+  static final ValueNotifier<int> activeTabNotifier = ValueNotifier<int>(0);
+
   @override
   State<DashboardShell> createState() => _DashboardShellState();
 }
 
 class _DashboardShellState extends State<DashboardShell> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    DashboardShell.activeTabNotifier.addListener(_onTabNotifierChanged);
+    _selectedIndex = DashboardShell.activeTabNotifier.value;
+  }
+
+  @override
+  void dispose() {
+    DashboardShell.activeTabNotifier.removeListener(_onTabNotifierChanged);
+    super.dispose();
+  }
+
+  void _onTabNotifierChanged() {
+    if (mounted && _selectedIndex != DashboardShell.activeTabNotifier.value) {
+      setState(() => _selectedIndex = DashboardShell.activeTabNotifier.value);
+    }
+  }
+
+  void _onTabSelected(int index) {
+    setState(() => _selectedIndex = index);
+    DashboardShell.activeTabNotifier.value = index;
+  }
 
   List<({dynamic icon, String label})> _getNavItems(BuildContext context) => [
         (icon: HugeIcons.strokeRoundedHome11, label: context.tr('nav.home')),
@@ -105,7 +132,7 @@ class _DashboardShellState extends State<DashboardShell> {
     final navItems = _getNavItems(context);
     return BottomNav(
       currentIndex: _selectedIndex,
-      onTap: (index) => setState(() => _selectedIndex = index),
+      onTap: _onTabSelected,
       items: navItems
           .map((item) => NavItem(icon: item.icon, title: item.label))
           .toList(),
@@ -192,7 +219,7 @@ class _DashboardShellState extends State<DashboardShell> {
                   label: item.label,
                   selected: selected,
                   isDark: isDark,
-                  onTap: () => setState(() => _selectedIndex = index),
+                  onTap: () => _onTabSelected(index),
                 );
               }),
 
@@ -221,30 +248,64 @@ class _DashboardShellState extends State<DashboardShell> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getPageTitle(context),
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF1E293B),
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getPageTitle(context),
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    context.tr('nav.staff_portal'),
-                    style: TextStyle(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.4)
-                          : const Color(0xFF64748B),
-                      fontSize: 14,
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          context.tr('nav.staff_portal'),
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.4)
+                                : const Color(0xFF64748B),
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: const Text(
+                            'v1.0.5 • TERKINI',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 12),
               _buildTopBarActions(context, isDark),
             ],
           ),

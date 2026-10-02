@@ -444,24 +444,33 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                clm['category'] as String,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              Expanded(
+                child: Text(
+                  clm['category'] as String,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
-                'RM ${(clm['amount'] as double).toStringAsFixed(2)}',
+                'RM ',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Row(
             children: [
-              Text(
-                '${clm['vendor']} • ${clm['date']}',
-                style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
+              Expanded(
+                child: Text(
+                  ' • ',
+                  style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
