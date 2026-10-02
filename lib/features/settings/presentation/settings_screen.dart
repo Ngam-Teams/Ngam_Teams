@@ -10,6 +10,7 @@ import '../../../core/state/app_settings.dart';
 import '../../../core/localization/app_translations.dart';
 import '../../../widgets/glass_toast.dart';
 import '../../../widgets/modal_sheet.dart';
+import '../../../core/services/app_update_service.dart';
 import '../../profile/presentation/profile_screen.dart';
 
 // ============================================================
@@ -254,7 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       HugeIcons.strokeRoundedBuilding03,
                       context.tr('settings.about_teams'),
                       trailing: Text(
-                        'v0.1.0',
+                        'v${AppUpdateService.currentVersion}',
                         style: TextStyle(
                           color: isDark
                               ? Colors.white.withValues(alpha: 0.4)
@@ -264,6 +265,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                       onTap: () => _showAboutApp(context, isDark),
+                    ),
+                    _buildDivider(isDark),
+                    _buildSettingsTile(
+                      isDark,
+                      HugeIcons.strokeRoundedCloudDownload,
+                      'Semak Kemas Kini',
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'GitHub Release',
+                            style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 14,
+                            color: isDark ? Colors.white38 : Colors.black38,
+                          ),
+                        ],
+                      ),
+                      onTap: () => AppUpdateService.checkManually(context),
                     ),
                   ],
                 ),

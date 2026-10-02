@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/teams_supabase_service.dart';
+import '../../../core/services/app_update_service.dart';
 import '../../../widgets/glass_panel.dart';
 import '../../../widgets/glass_toast.dart';
 import '../../../widgets/stat_card.dart';
@@ -51,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.initState();
     _startLiveTimer();
     _loadInitialData();
+    AppUpdateService.checkOnStartup(context);
   }
 
   @override
