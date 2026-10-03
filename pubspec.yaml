@@ -1,7 +1,7 @@
 name: ngam_teams
 description: "Ngam Teams – Staff Portal for the Ngam ecosystem."
 publish_to: 'none'
-version: 0.1.11+1
+version: 0.1.12+1
 
 environment:
   sdk: ^3.8.1
@@ -28,6 +28,7 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.2
+  package_info_plus: ^9.0.1
 
 dev_dependencies:
   flutter_test:
