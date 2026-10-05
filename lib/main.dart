@@ -14,6 +14,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/state/app_settings.dart';
+import 'core/services/app_update_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,13 +38,17 @@ class _NgamTeamsAppState extends State<NgamTeamsApp> {
   }
 
   Future<void> _bootstrap() async {
-    // Initialize shader pipeline & preferences concurrently
+    // Initialize shader pipeline, preferences & app version concurrently
     await Future.wait([
       LiquidGlassWidgets.initialize().catchError((e) {
         debugPrint('LiquidGlass init error: $e');
       }),
       AppSettings.instance.init().catchError((e) {
         debugPrint('AppSettings init error: $e');
+      }),
+      AppUpdateService.getAppVersion().catchError((e) {
+        debugPrint('AppUpdateService init error: $e');
+        return AppUpdateService.fallbackVersion;
       }),
     ]);
 

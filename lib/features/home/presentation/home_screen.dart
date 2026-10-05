@@ -52,7 +52,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _startLiveTimer();
     _loadInitialData();
     _service.attendanceNotifier.addListener(_syncAttendanceFromNotifier);
-    AppUpdateService.checkOnStartup(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (mounted) {
+          AppUpdateService.checkOnStartup(context);
+        }
+      });
+    });
   }
 
   void _syncAttendanceFromNotifier() {
