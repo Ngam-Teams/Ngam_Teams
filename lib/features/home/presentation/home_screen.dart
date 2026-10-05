@@ -374,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   const Icon(Icons.verified, size: 13, color: AppColors.primary),
                   const SizedBox(width: 6),
                   Text(
-                    'Ngam Teams • Build Terkini v1.0.5',
+                    'Ngam Teams • Build Terkini v${AppUpdateService.currentVersion}',
                     style: TextStyle(
                       color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
                       fontSize: 11,
@@ -500,9 +500,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           width: 0.8,
                         ),
                       ),
-                      child: const Text(
-                        'v1.0.5',
-                        style: TextStyle(
+                      child: Text(
+                        'v${AppUpdateService.currentVersion}',
+                        style: const TextStyle(
                           color: AppColors.primary,
                           fontSize: 9,
                           fontWeight: FontWeight.w800,

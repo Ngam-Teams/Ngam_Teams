@@ -10,6 +10,7 @@ import '../../announcements/presentation/announcements_screen.dart';
 import '../../attendance/presentation/attendance_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
+import '../../../core/services/app_update_service.dart';
 
 /// Master dashboard layout — theme-aware & bilingual.
 /// NavigationRail on desktop, pill-sliding BottomNav on mobile.
@@ -296,9 +297,9 @@ class _DashboardShellState extends State<DashboardShell> {
                               color: AppColors.primary.withValues(alpha: 0.3),
                             ),
                           ),
-                          child: const Text(
-                            'v1.0.5 • TERKINI',
-                            style: TextStyle(
+                          child: Text(
+                            'v${AppUpdateService.currentVersion} • TERKINI',
+                            style: const TextStyle(
                               color: AppColors.primary,
                               fontSize: 10,
                               fontWeight: FontWeight.w700,

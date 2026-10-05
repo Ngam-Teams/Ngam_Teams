@@ -312,7 +312,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Ngam Teams v0.1.0',
+                      'Ngam Teams v${AppUpdateService.currentVersion}',
                       style: TextStyle(
                         color: isDark
                             ? Colors.white.withValues(alpha: 0.4)
@@ -1175,9 +1175,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: AppColors.primary.withValues(alpha: 0.3),
                 ),
               ),
-              child: const Text(
-                'Version 0.1.0 (Build 2026.09.18)',
-                style: TextStyle(
+              child: Text(
+                'Version ${AppUpdateService.currentVersion}',
+                style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
