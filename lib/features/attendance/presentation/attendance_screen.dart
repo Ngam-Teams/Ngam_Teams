@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/services/teams_supabase_service.dart';
 import '../../../widgets/glass_panel.dart';
 import '../../../widgets/glass_toast.dart';
+import '../../leave/presentation/leave_screen.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -16,7 +17,8 @@ class AttendanceScreen extends StatefulWidget {
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  int _activeSubTab = 0; // 0 = Kehadiran (Clock-in), 1 = Cuti (Leave)
   bool _isCheckedIn = false;
   String? _checkInTime;
   String? _checkOutTime;
@@ -43,6 +45,29 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     _updateTime();
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) => _updateTime());
     _loadAttendance();
+    TeamsSupabaseService.instance.attendanceNotifier.addListener(_syncAttendanceFromNotifier);
+  }
+
+  void _syncAttendanceFromNotifier() {
+    final today = TeamsSupabaseService.instance.attendanceNotifier.value;
+    if (!mounted) return;
+    setState(() {
+      if (today != null) {
+        final inTimeStr = today['check_in_time'];
+        final outTimeStr = today['check_out_time'];
+        _checkInTime = inTimeStr != null
+            ? DateFormat('hh:mm a').format(DateTime.parse(inTimeStr).toLocal())
+            : null;
+        _checkOutTime = outTimeStr != null
+            ? DateFormat('hh:mm a').format(DateTime.parse(outTimeStr).toLocal())
+            : null;
+        _isCheckedIn = _checkInTime != null && _checkOutTime == null;
+      } else {
+        _isCheckedIn = false;
+        _checkInTime = null;
+        _checkOutTime = null;
+      }
+    });
   }
 
   Future<void> _loadAttendance() async {
@@ -119,6 +144,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
   @override
   void dispose() {
+    TeamsSupabaseService.instance.attendanceNotifier.removeListener(_syncAttendanceFromNotifier);
     _pulseController.dispose();
     _clockTimer.cancel();
     super.dispose();
@@ -128,15 +154,128 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 120),
-      child: Column(
-        children: [
-          // ─── Clock & Check-in Button ──────────────────────────
-          _buildClockCard(isDark),
-          const SizedBox(height: 24),
+    return Column(
+      children: [
+        // ─── Segmented Pill Switcher (Kehadiran / Cuti) ─────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _activeSubTab = 0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _activeSubTab == 0
+                            ? AppColors.primary
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: _activeSubTab == 0
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedClock01,
+                            color: _activeSubTab == 0 ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Kehadiran (Clock In)',
+                            style: TextStyle(
+                              color: _activeSubTab == 0 ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                              fontWeight: _activeSubTab == 0 ? FontWeight.bold : FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _activeSubTab = 1),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _activeSubTab == 1
+                            ? AppColors.primary
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: _activeSubTab == 1
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedCalendar03,
+                            color: _activeSubTab == 1 ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Permohonan Cuti',
+                            style: TextStyle(
+                              color: _activeSubTab == 1 ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                              fontWeight: _activeSubTab == 1 ? FontWeight.bold : FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
 
-          // ─── Today's Status ───────────────────────────────────
+        // ─── Sub-Tab Content ─────────────────────────────────────────
+        Expanded(
+          child: _activeSubTab == 1
+              ? const LeaveScreen()
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 120),
+                  child: Column(
+                    children: [
+                      // ─── Clock & Check-in Button ──────────────────
+                      _buildClockCard(isDark),
+                      const SizedBox(height: 24),
+
+                      // ─── Today's Status ───────────────────────────
           GlassPanel(
             title: "Today's Status",
             icon: HugeIcons.strokeRoundedCalendar03,
@@ -196,11 +335,11 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                         Builder(
                           builder: (context) {
                             final item = _attendanceHistory[i];
-                            final dateStr = item['attendance_date'] ?? '';
+                            final dateStr = (item['date'] ?? item['attendance_date'] ?? '').toString();
                             DateTime? parsedDate = DateTime.tryParse(dateStr);
                             final displayDate = parsedDate != null
                                 ? DateFormat('EEE, MMM d').format(parsedDate)
-                                : dateStr;
+                                : (dateStr.isNotEmpty ? dateStr : 'Today');
 
                             final inStr = item['check_in_time'];
                             final outStr = item['check_out_time'];
@@ -229,8 +368,11 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                     ],
                   ),
           ),
-        ],
-      ),
+                      ],
+                    ),
+                  ),
+        ),
+      ],
     );
   }
 

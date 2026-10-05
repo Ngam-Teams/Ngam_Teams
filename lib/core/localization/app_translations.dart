@@ -9,7 +9,7 @@ class AppTranslations {
       // Navigation
       'nav.home': 'Home',
       'nav.notices': 'Notices',
-      'nav.attend': 'Attend',
+      'nav.attend': 'Attendance & Leave',
       'nav.leave': 'Leave',
       'nav.settings': 'Settings',
       'nav.profile': 'Profile',
@@ -100,7 +100,7 @@ class AppTranslations {
       // Navigation
       'nav.home': 'Laman',
       'nav.notices': 'Notis',
-      'nav.attend': 'Kehadiran',
+      'nav.attend': 'Kehadiran & Cuti',
       'nav.leave': 'Cuti',
       'nav.settings': 'Tetapan',
       'nav.profile': 'Profil',

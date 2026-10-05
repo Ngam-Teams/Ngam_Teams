@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../../core/localization/app_translations.dart';
@@ -303,21 +304,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           textCapitalization: TextCapitalization.characters,
                           style: TextStyle(
                             color: isDark ? Colors.white : const Color(0xFF0F172A),
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
+                            letterSpacing: 2.0,
                           ),
                           decoration: InputDecoration(
                             hintText: 'e.g. STF-001',
                             hintStyle: TextStyle(
                               color: isDark ? Colors.white30 : Colors.black26,
                               letterSpacing: 1,
+                              fontSize: 15,
                             ),
                             filled: true,
                             fillColor: isDark
                                 ? Colors.white.withValues(alpha: 0.05)
                                 : const Color(0xFFF1F5F9),
-                            prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primary),
+                            prefixIcon: const Icon(Icons.qr_code_rounded, color: AppColors.primary),
+                            suffixIcon: IconButton(
+                              tooltip: 'Tampal Kod',
+                              icon: const Icon(Icons.content_paste_rounded, color: AppColors.primary, size: 20),
+                              onPressed: () async {
+                                final data = await Clipboard.getData('text/plain');
+                                if (data?.text != null && data!.text!.isNotEmpty) {
+                                  var txt = data.text!.trim().toUpperCase();
+                                  if (txt.startsWith('NGAM_STAFF:')) {
+                                    txt = txt.replaceFirst('NGAM_STAFF:', '').trim();
+                                  }
+                                  codeCtrl.text = txt;
+                                }
+                              },
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
@@ -329,6 +345,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(Icons.info_outline_rounded, size: 14, color: isDark ? Colors.white38 : Colors.black38),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'Dapatkan kod ini atau imbas QR daripada skrin Pengurusan Staf majikan anda.',
+                                style: TextStyle(
+                                  color: isDark ? Colors.white38 : Colors.black45,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 24),
                         SizedBox(

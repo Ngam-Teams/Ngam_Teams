@@ -69,6 +69,9 @@ class TeamsSupabaseService {
     }
   }
 
+  /// Global ValueNotifier for today's attendance so Home and Attendance screens are 100% in sync.
+  final ValueNotifier<Map<String, dynamic>?> attendanceNotifier = ValueNotifier<Map<String, dynamic>?>(null);
+
   // ===========================================================================
   // ATTENDANCE
   // ===========================================================================
@@ -85,9 +88,10 @@ class TeamsSupabaseService {
           .from('staff_attendance')
           .select()
           .eq('user_id', user.id)
-          .eq('attendance_date', todayStr)
+          .eq('date', todayStr)
           .maybeSingle();
 
+      attendanceNotifier.value = res;
       return res;
     } catch (e) {
       debugPrint('Error fetching today attendance: $e');
@@ -111,14 +115,15 @@ class TeamsSupabaseService {
         .upsert({
           'business_id': businessId,
           'user_id': user.id,
-          'attendance_date': todayStr,
+          'date': todayStr,
           'check_in_time': now.toIso8601String(),
           'status': 'present',
           if (notes != null) 'notes': notes,
-        }, onConflict: 'user_id,attendance_date')
+        }, onConflict: 'business_id,user_id,date')
         .select()
         .single();
 
+    attendanceNotifier.value = res;
     return res;
   }
 
@@ -136,10 +141,11 @@ class TeamsSupabaseService {
           'check_out_time': now.toIso8601String(),
         })
         .eq('user_id', user.id)
-        .eq('attendance_date', todayStr)
+        .eq('date', todayStr)
         .select()
         .single();
 
+    attendanceNotifier.value = res;
     return res;
   }
 
@@ -153,7 +159,7 @@ class TeamsSupabaseService {
           .from('staff_attendance')
           .select()
           .eq('user_id', user.id)
-          .order('attendance_date', ascending: false)
+          .order('date', ascending: false)
           .limit(limit);
 
       return (res as List).cast<Map<String, dynamic>>();
@@ -396,7 +402,10 @@ class TeamsSupabaseService {
       return {'success': false, 'message': 'You must be logged in to link your account.'};
     }
 
-    final code = rawCode.trim().toUpperCase();
+    var code = rawCode.trim().toUpperCase();
+    if (code.startsWith('NGAM_STAFF:')) {
+      code = code.replaceFirst('NGAM_STAFF:', '').trim();
+    }
     if (code.isEmpty) {
       return {'success': false, 'message': 'Please enter a valid Staff Code.'};
     }

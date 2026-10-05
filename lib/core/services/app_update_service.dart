@@ -24,7 +24,7 @@ class AppReleaseInfo {
 }
 
 class AppUpdateService {
-  static const String fallbackVersion = '0.1.13';
+  static const String fallbackVersion = '0.1.15';
   static String? _cachedVersion;
 
   static String get currentVersion => _cachedVersion ?? fallbackVersion;

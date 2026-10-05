@@ -8,7 +8,6 @@ import '../../../widgets/bottom_nav.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../announcements/presentation/announcements_screen.dart';
 import '../../attendance/presentation/attendance_screen.dart';
-import '../../leave/presentation/leave_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 
@@ -63,7 +62,6 @@ class _DashboardShellState extends State<DashboardShell> {
         (icon: HugeIcons.strokeRoundedHome11, label: context.tr('nav.home')),
         (icon: HugeIcons.strokeRoundedMegaphone01, label: context.tr('nav.notices')),
         (icon: HugeIcons.strokeRoundedClock01, label: context.tr('nav.attend')),
-        (icon: HugeIcons.strokeRoundedCalendar03, label: context.tr('nav.leave')),
         (icon: HugeIcons.strokeRoundedSettings01, label: context.tr('nav.settings')),
       ];
 
@@ -330,20 +328,18 @@ class _DashboardShellState extends State<DashboardShell> {
         0 => context.tr('nav.home'),
         1 => context.tr('nav.notices'),
         2 => context.tr('nav.attend'),
-        3 => context.tr('nav.leave'),
-        4 => context.tr('nav.settings'),
+        3 => context.tr('nav.settings'),
         _ => 'Teams',
       };
 
   Widget _buildPageBody() {
     return IndexedStack(
-      index: _selectedIndex.clamp(0, 4),
+      index: _selectedIndex.clamp(0, 3),
       children: [
         _activatedTabs.contains(0) ? const HomeScreen() : const SizedBox.shrink(),
         _activatedTabs.contains(1) ? const AnnouncementsScreen() : const SizedBox.shrink(),
         _activatedTabs.contains(2) ? const AttendanceScreen() : const SizedBox.shrink(),
-        _activatedTabs.contains(3) ? const LeaveScreen() : const SizedBox.shrink(),
-        _activatedTabs.contains(4) ? const SettingsScreen() : const SizedBox.shrink(),
+        _activatedTabs.contains(3) ? const SettingsScreen() : const SizedBox.shrink(),
       ],
     );
   }

@@ -36,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // Profile state
   Map<String, dynamic>? _profile;
-  bool _loadingProfile = true;
 
   // Interactive quick checklist on dashboard
   final List<Map<String, dynamic>> _quickTasks = [
@@ -52,11 +51,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.initState();
     _startLiveTimer();
     _loadInitialData();
+    _service.attendanceNotifier.addListener(_syncAttendanceFromNotifier);
     AppUpdateService.checkOnStartup(context);
+  }
+
+  void _syncAttendanceFromNotifier() {
+    final todayAttendance = _service.attendanceNotifier.value;
+    if (!mounted) return;
+    setState(() {
+      if (todayAttendance != null) {
+        final inStr = todayAttendance['check_in_time'];
+        final outStr = todayAttendance['check_out_time'];
+        if (inStr != null && outStr == null) {
+          _isCheckedIn = true;
+          final parsed = DateTime.tryParse(inStr)?.toLocal();
+          if (parsed != null) {
+            _checkInDateTime = parsed;
+            _checkInTimeString = DateFormat('hh:mm a').format(parsed);
+          }
+        } else if (outStr != null) {
+          _isCheckedIn = false;
+        }
+      } else {
+        _isCheckedIn = false;
+      }
+    });
   }
 
   @override
   void dispose() {
+    _service.attendanceNotifier.removeListener(_syncAttendanceFromNotifier);
     _liveClockTimer?.cancel();
     super.dispose();
   }
@@ -92,7 +116,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if (mounted) {
         setState(() {
           _profile = profile;
-          _loadingProfile = false;
 
           if (todayAttendance != null) {
             final inStr = todayAttendance['check_in_time'];
@@ -111,9 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         });
       }
     } catch (_) {
-      if (mounted) {
-        setState(() => _loadingProfile = false);
-      }
+      // ignore
     }
   }
 
