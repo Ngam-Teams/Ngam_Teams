@@ -226,11 +226,33 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
     }
   }
 
+  void _openWhatsAppQueueReminder({
+    required String phone,
+    required String customerName,
+    required String ticketNum,
+    String? station,
+  }) async {
+    String clean = phone.replaceAll(RegExp(r'[^\d]'), '');
+    if (clean.startsWith('0')) clean = '6$clean';
+    final stationText = station != null ? ' di $station' : '';
+    final message = Uri.encodeComponent(
+      'Hai $customerName! Nombor giliran anda *$ticketNum*$stationText telah dipanggil. Sila masuk ke premis sekarang untuk giliran servis anda. Terima kasih!',
+    );
+    final uri = Uri.parse('https://wa.me/$clean?text=$message');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) showGlassToast(context, 'Tidak dapat membuka WhatsApp', isError: true);
+    }
+  }
+
   // Action: Call ticket to counter/chair
   Future<void> _handleCallTicket(Map<String, dynamic> ticket) async {
     final ticketId = ticket['id'] as String;
     final ticketNum = ticket['ticket_number'] ?? 'Giliran';
     final station = ticket['station_or_chair'] ?? 'Kerusi 1';
+    final phone = ticket['phone_number'] as String?;
+    final customerName = ticket['customer_name'] as String? ?? 'Pelanggan';
 
     setState(() {
       ticket['status'] = 'calling';
@@ -246,6 +268,16 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
 
     if (mounted) {
       showGlassToast(context, 'Nombor $ticketNum dipanggil ke $station');
+
+      // Auto trigger WhatsApp reminder prompt if phone available
+      if (phone != null && phone.isNotEmpty) {
+        _openWhatsAppQueueReminder(
+          phone: phone,
+          customerName: customerName,
+          ticketNum: ticketNum,
+          station: station,
+        );
+      }
     }
   }
 
@@ -810,8 +842,13 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
                   ),
                   IconButton(
                     icon: const HugeIcon(icon: HugeIcons.strokeRoundedMessage01, color: Color(0xFF25D366), size: 18),
-                    onPressed: () => _openWhatsApp(phone),
-                    tooltip: 'WhatsApp Pelanggan',
+                    onPressed: () => _openWhatsAppQueueReminder(
+                      phone: phone,
+                      customerName: customerName,
+                      ticketNum: ticketNum,
+                      station: station,
+                    ),
+                    tooltip: 'WhatsApp Peringatan Giliran',
                   ),
                   const SizedBox(width: 4),
                 ],
