@@ -463,4 +463,99 @@ class TeamsSupabaseService {
       };
     }
   }
+
+  /// ==========================================
+  /// SMART WALK-IN QUEUE
+  /// ==========================================
+
+  /// Fetch active and recent queue tickets for today
+  Future<List<Map<String, dynamic>>> fetchQueueTickets() async {
+    try {
+      final businessId = await getCurrentBusinessId();
+      if (businessId == null) return [];
+
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day).toIso8601String();
+
+      final res = await _client
+          .from('queue_tickets')
+          .select()
+          .eq('business_id', businessId)
+          .gte('created_at', startOfDay)
+          .order('created_at', ascending: true);
+
+      return List<Map<String, dynamic>>.from(res);
+    } catch (e) {
+      debugPrint('Error fetching queue tickets: $e');
+      return [];
+    }
+  }
+
+  /// Call a queue ticket to station
+  Future<bool> callQueueTicket({
+    required String ticketId,
+    required String staffName,
+    required String station,
+  }) async {
+    try {
+      await _client.from('queue_tickets').update({
+        'status': 'calling',
+        'assigned_staff_name': staffName,
+        'station_or_chair': station,
+        'called_at': DateTime.now().toIso8601String(),
+      }).eq('id', ticketId);
+      return true;
+    } catch (e) {
+      debugPrint('Error calling queue ticket: $e');
+      return false;
+    }
+  }
+
+  /// Start serving a queue ticket
+  Future<bool> startServingQueueTicket({
+    required String ticketId,
+    required String staffName,
+    required String station,
+  }) async {
+    try {
+      await _client.from('queue_tickets').update({
+        'status': 'serving',
+        'assigned_staff_name': staffName,
+        'station_or_chair': station,
+        'serving_at': DateTime.now().toIso8601String(),
+      }).eq('id', ticketId);
+      return true;
+    } catch (e) {
+      debugPrint('Error starting serving queue ticket: $e');
+      return false;
+    }
+  }
+
+  /// Complete a queue ticket
+  Future<bool> completeQueueTicket({required String ticketId}) async {
+    try {
+      await _client.from('queue_tickets').update({
+        'status': 'completed',
+        'completed_at': DateTime.now().toIso8601String(),
+      }).eq('id', ticketId);
+      return true;
+    } catch (e) {
+      debugPrint('Error completing queue ticket: $e');
+      return false;
+    }
+  }
+
+  /// Cancel a queue ticket
+  Future<bool> cancelQueueTicket({required String ticketId}) async {
+    try {
+      await _client.from('queue_tickets').update({
+        'status': 'cancelled',
+      }).eq('id', ticketId);
+      return true;
+    } catch (e) {
+      debugPrint('Error cancelling queue ticket: $e');
+      return false;
+    }
+  }
 }
+
