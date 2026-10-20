@@ -1,4 +1,4 @@
-package com.example.ngam_teams
+package com.ngam.teams
 
 import io.flutter.embedding.android.FlutterActivity
 
