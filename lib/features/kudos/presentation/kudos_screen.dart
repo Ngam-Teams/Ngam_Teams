@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/teams_supabase_service.dart';
 import '../../../widgets/glass_toast.dart';
 
 // ============================================================
@@ -15,51 +16,50 @@ class KudosScreen extends StatefulWidget {
 }
 
 class _KudosScreenState extends State<KudosScreen> {
-  late List<Map<String, dynamic>> _kudosFeed;
-  late List<Map<String, dynamic>> _leaderboard;
+  List<Map<String, dynamic>> _kudosFeed = [];
+  List<Map<String, dynamic>> _leaderboard = [];
+  List<Map<String, dynamic>> _coworkers = [];
 
   @override
   void initState() {
     super.initState();
-    _leaderboard = [
-      {'name': 'Nurul Huda', 'role': 'Barista / Front', 'points': 48, 'avatar': 'N', 'rank': 1},
-      {'name': 'Chef Danial', 'role': 'Ketua Dapur', 'points': 42, 'avatar': 'D', 'rank': 2},
-      {'name': 'Ahmad Syafii', 'role': 'Juruwang', 'points': 35, 'avatar': 'A', 'rank': 3},
-    ];
+    _loadCoworkers();
+  }
 
-    _kudosFeed = [
-      {
-        'id': 'KD-1',
-        'from': 'Farid Kamil',
-        'to': 'Nurul Huda',
-        'badge': 'Customer Whisperer ⭐',
-        'message': 'Layan meja VIP dengan sangat profesional tadi, pelanggan bagi review 5-star di Ngam App!',
-        'time': '1 jam lepas',
-        'likes': 6,
-      },
-      {
-        'id': 'KD-2',
-        'from': 'Ahmad Syafii',
-        'to': 'Chef Danial',
-        'badge': 'Rush Hour Hero ⚡',
-        'message': 'Siapkan 20 tiket order dalam masa 15 minit waktu lunch rush, memang padu chef!',
-        'time': '3 jam lepas',
-        'likes': 8,
-      },
-      {
-        'id': 'KD-3',
-        'from': 'Nurul Huda',
-        'to': 'Ahmad Syafii',
-        'badge': 'Positive Vibes ✨',
-        'message': 'Selalu ceriakan suasana kaunter walaupun waktu sibuk hujung minggu!',
-        'time': 'Semalam',
-        'likes': 4,
-      },
-    ];
+  Future<void> _loadCoworkers() async {
+    try {
+      final list = await TeamsSupabaseService.instance.fetchCoworkers();
+      if (mounted) {
+        setState(() {
+          _coworkers = list;
+          if (list.isNotEmpty) {
+            _leaderboard = list.take(3).toList().asMap().entries.map((entry) {
+              final idx = entry.key;
+              final c = entry.value;
+              final name = (c['name'] as String? ?? 'Krew').trim();
+              final role = (c['designation'] as String? ?? c['role'] as String? ?? 'Staf').trim();
+              return {
+                'name': name,
+                'role': role,
+                'points': (3 - idx) * 15,
+                'avatar': name.isNotEmpty ? name[0].toUpperCase() : 'K',
+                'rank': idx + 1,
+              };
+            }).toList();
+          } else {
+            _leaderboard = [];
+          }
+        });
+      }
+    } catch (_) {}
   }
 
   void _openSendKudosModal() {
-    String selectedColleague = 'Nurul Huda';
+    if (_coworkers.isEmpty) {
+      showGlassToast(context, 'Tiada rakan krew berdaftar untuk dihantar Kudos.', isError: true);
+      return;
+    }
+    String selectedColleague = (_coworkers.first['name'] as String? ?? 'Krew').trim();
     String selectedBadge = 'Rush Hour Hero ⚡';
     final msgCtrl = TextEditingController();
 
@@ -137,9 +137,13 @@ class _KudosScreenState extends State<KudosScreen> {
                         underline: const SizedBox(),
                         dropdownColor: isDark ? const Color(0xFF1A1A28) : Colors.white,
                         style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.w600),
-                        items: ['Nurul Huda', 'Chef Danial', 'Ahmad Syafii', 'Farid Kamil']
-                            .map((name) => DropdownMenuItem(value: name, child: Text(name)))
-                            .toList(),
+                        items: _coworkers.isEmpty
+                            ? [DropdownMenuItem(value: selectedColleague, child: Text(selectedColleague))]
+                            : _coworkers
+                                .map((c) => (c['name'] as String? ?? 'Krew').trim())
+                                .toSet()
+                                .map((name) => DropdownMenuItem(value: name, child: Text(name)))
+                                .toList(),
                         onChanged: (val) => setModalState(() => selectedColleague = val!),
                       ),
                     ),
@@ -268,58 +272,60 @@ class _KudosScreenState extends State<KudosScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Star of the Month Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF78350F), Color(0xFF451A03)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            if (_leaderboard.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF78350F), Color(0xFF451A03)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF59E0B),
-                      shape: BoxShape.circle,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF59E0B),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.emoji_events_rounded, color: Colors.black, size: 28),
                     ),
-                    child: const Icon(Icons.emoji_events_rounded, color: Colors.black, size: 28),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Pekerja Cemerlang Bulan Ini',
-                          style: TextStyle(color: Color(0xFFFCD34D), fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _leaderboard.first['name'] as String,
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
-                        ),
-                        Text(
-                          '${_leaderboard.first['role']} • ${_leaderboard.first['points']} Mata Kudos',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
-                        ),
-                      ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Pekerja Cemerlang Bulan Ini',
+                            style: TextStyle(color: Color(0xFFFCD34D), fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _leaderboard.first['name'] as String,
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                          ),
+                          Text(
+                            '${_leaderboard.first['role']} • ${_leaderboard.first['points']} Mata Kudos',
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
+            ],
 
             // Send Kudos Quick Button
             SizedBox(
@@ -344,7 +350,41 @@ class _KudosScreenState extends State<KudosScreen> {
               style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ..._kudosFeed.map((kd) {
+            if (_kudosFeed.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.favorite_outline_rounded,
+                        size: 40,
+                        color: isDark ? Colors.white24 : Colors.black26,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Belum ada suapan Kudos dihantar.',
+                        style: TextStyle(
+                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Jadilah yang pertama menghantar penghargaan kepada rakan krew anda!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ..._kudosFeed.map((kd) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(16),

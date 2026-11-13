@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/teams_supabase_service.dart';
 import '../../../widgets/glass_toast.dart';
 
 // ============================================================
@@ -17,63 +18,91 @@ class EarningsScreen extends StatefulWidget {
 class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final double _basicSalary = 1800.00;
-  final double _overtimePay = 320.00;
-  final double _commissionPay = 420.00;
-  final double _tipsPay = 140.00;
+  double _basicSalary = 0.00;
+  final double _overtimePay = 0.00;
+  double _commissionPay = 0.00;
+  final double _tipsPay = 0.00;
+  bool _isLoading = false;
 
   double get _grossPay => _basicSalary + _overtimePay + _commissionPay + _tipsPay;
   double get _epfDeduction => _basicSalary * 0.11; // 11% EPF
-  double get _socsoDeduction => 9.25; // SOCSO
-  double get _eisDeduction => 3.70; // EIS
+  double get _socsoDeduction => _basicSalary > 0 ? 9.25 : 0.0; // SOCSO
+  double get _eisDeduction => _basicSalary > 0 ? 3.70 : 0.0; // EIS
   double get _netPay => _grossPay - (_epfDeduction + _socsoDeduction + _eisDeduction);
 
-  late List<Map<String, dynamic>> _payslipHistory;
-  late List<Map<String, dynamic>> _commissionsToday;
+  List<Map<String, dynamic>> _payslipHistory = [];
+  List<Map<String, dynamic>> _commissionsToday = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadPayrollData();
+  }
 
-    _payslipHistory = [
-      {
-        'month': 'Ogos 2026',
-        'payDate': '28 Aug 2026',
-        'basic': 1800.00,
-        'ot': 280.00,
-        'commission': 490.00,
-        'tips': 160.00,
-        'net': 2520.50,
-        'status': 'Paid (Maybank)',
-      },
-      {
-        'month': 'Julai 2026',
-        'payDate': '28 Jul 2026',
-        'basic': 1800.00,
-        'ot': 340.00,
-        'commission': 510.00,
-        'tips': 150.00,
-        'net': 2588.00,
-        'status': 'Paid (Maybank)',
-      },
-      {
-        'month': 'Jun 2026',
-        'payDate': '28 Jun 2026',
-        'basic': 1800.00,
-        'ot': 190.00,
-        'commission': 380.00,
-        'tips': 120.00,
-        'net': 2280.00,
-        'status': 'Paid (Maybank)',
-      },
-    ];
+  Future<void> _loadPayrollData() async {
+    setState(() => _isLoading = true);
+    try {
+      final settings = await TeamsSupabaseService.instance.fetchMyPayrollSettings();
+      final payslips = await TeamsSupabaseService.instance.fetchMyPayroll();
+      final tempahan = await TeamsSupabaseService.instance.fetchMyTempahan();
 
-    _commissionsToday = [
-      {'service': 'Premium Haircut & Beard Trim', 'time': '11:45 AM', 'price': 50.00, 'comm': 17.50},
-      {'service': 'Classic Gentleman Cut', 'time': '01:15 PM', 'price': 35.00, 'comm': 12.00},
-      {'service': 'Scalp Treatment & Tonic Mask', 'time': '03:00 PM', 'price': 70.00, 'comm': 24.50},
-    ];
+      if (mounted) {
+        double basic = 0.0;
+        if (settings != null) {
+          basic = (settings['base_salary'] as num?)?.toDouble() ?? 0.0;
+        }
+
+        double commToday = 0.0;
+        final List<Map<String, dynamic>> commItems = [];
+        final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+
+        for (final b in tempahan) {
+          final bDate = (b['booking_date'] as String? ?? '');
+          final comm = (b['commission_amount'] as num?)?.toDouble() ?? 0.0;
+          if (comm > 0) {
+            commToday += comm;
+            if (bDate == todayStr) {
+              commItems.add({
+                'service': b['service_name'] ?? b['title'] ?? 'Perkhidmatan',
+                'time': b['booking_time'] ?? '',
+                'price': (b['total_amount'] as num?)?.toDouble() ?? 0.0,
+                'comm': comm,
+              });
+            }
+          }
+        }
+
+        setState(() {
+          _basicSalary = basic;
+          _commissionPay = commToday;
+          _commissionsToday = commItems;
+          _payslipHistory = payslips.map((p) {
+            final month = p['month'] as String? ?? 'Bulan Semasa';
+            final basicVal = (p['base_salary'] as num?)?.toDouble() ?? 0.0;
+            final allowance = (p['allowance'] as num?)?.toDouble() ?? 0.0;
+            final bonus = (p['bonus'] as num?)?.toDouble() ?? 0.0;
+            final commVal = (p['commission'] as num?)?.toDouble() ?? 0.0;
+            final netVal = (p['net_salary'] as num?)?.toDouble() ?? 0.0;
+            final statusStr = p['status'] as String? ?? 'pending';
+
+            return {
+              'month': month,
+              'payDate': p['created_at'] != null ? (p['created_at'] as String).substring(0, 10) : '—',
+              'basic': basicVal,
+              'ot': allowance + bonus,
+              'commission': commVal,
+              'tips': 0.0,
+              'net': netVal,
+              'status': statusStr == 'paid' || statusStr == 'approved' ? 'Dibayar' : 'Menunggu Kelulusan',
+            };
+          }).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -323,37 +352,51 @@ class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProvid
             style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontSize: 15, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          ..._commissionsToday.map((c) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF161624) : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12),
+          if (_commissionsToday.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: Text(
+                  'Tiada komisen dicatatkan hari ini.',
+                  style: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black38,
+                    fontSize: 13,
+                  ),
+                ),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(c['service'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                        Text('${c['time']} • Nilai Jualan: RM ${(c['price'] as double).toStringAsFixed(2)}',
-                            style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 11)),
-                      ],
+            )
+          else
+            ..._commissionsToday.map((c) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF161624) : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(c['service'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('${c['time']} • Nilai Jualan: RM ${(c['price'] as double).toStringAsFixed(2)}',
+                              style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 11)),
+                        ],
+                      ),
                     ),
-                  ),
-                  Text(
-                    '+RM ${(c['comm'] as double).toStringAsFixed(2)}',
-                    style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                ],
-              ),
-            );
-          }),
+                    Text(
+                      '+RM ${(c['comm'] as double).toStringAsFixed(2)}',
+                      style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );
@@ -370,6 +413,41 @@ class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProvid
   }
 
   Widget _buildHistoryTab(bool isDark) {
+    if (_payslipHistory.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 48,
+                color: isDark ? Colors.white24 : Colors.black26,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Tiada Rekod Slip Gaji',
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Slip gaji bulanan yang telah diluluskan oleh majikan akan dipaparkan di sini.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(20),
       itemCount: _payslipHistory.length,

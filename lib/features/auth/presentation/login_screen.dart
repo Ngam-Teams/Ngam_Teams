@@ -153,26 +153,27 @@ class _LoginScreenState extends State<LoginScreen>
           }
         }
       } catch (sbError) {
-        // If Supabase is not configured or in offline demo mode, fall through to demo validation
-        final errString = sbError.toString();
-        if (!errString.contains('not initialized') &&
-            !isQuickDemo &&
-            !email.endsWith('@ngam.my')) {
+        if (sbError is AuthException) {
+          rethrow;
+        }
+        if (!isQuickDemo) {
           rethrow;
         }
       }
 
-      // 2. Mock / Staff Demo fallback for smooth offline testing
+      // 2. Mock / Staff Demo fallback only if explicit quick demo
       if (!supabaseSuccess) {
         await Future.delayed(const Duration(milliseconds: 650));
       }
 
       if (mounted) {
+        final isMs = AppSettings.instance.languageCode == 'ms';
+        final name = email.split('@').first.toUpperCase();
         showGlassToast(
           context,
           _isSignUpMode
-              ? 'Account created! Welcome, ${email.split('@').first.toUpperCase()}!'
-              : 'Welcome back, ${email.split('@').first.toUpperCase()}!',
+              ? (isMs ? 'Akaun berjaya dicipta! Selamat datang, $name!' : 'Account created! Welcome, $name!')
+              : (isMs ? 'Selamat kembali, $name!' : 'Welcome back, $name!'),
           customIcon: Icons.verified_user_rounded,
           customColor: AppColors.success,
         );

@@ -32,28 +32,7 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
       {'name': 'Hospital Melaka (Kecemasan)', 'phone': '+60 6-282 2344', 'role': 'Hospital 24 Jam', 'color': const Color(0xFFEC4899)},
     ];
 
-    _incidentReports = [
-      {
-        'id': 'INC-201',
-        'type': 'Kerosakan Peralatan Dapur',
-        'severity': IncidentSeverity.medium,
-        'location': 'Dapur Memasak',
-        'time': 'Hari Ini, 11:30 AM',
-        'reporter': 'Chef Danial',
-        'status': 'Dalam Tindakan',
-        'desc': 'Blender heavy-duty mengeluarkan bau hangit bila dikisar lama. Telah ditutup suis utama.',
-      },
-      {
-        'id': 'INC-198',
-        'type': 'Pinggan Pecah & Tumpahan',
-        'severity': IncidentSeverity.low,
-        'location': 'Ruang Makan Meja 7',
-        'time': 'Semalam, 08:15 PM',
-        'reporter': 'Nurul Huda',
-        'status': 'Selesai',
-        'desc': 'Pelanggan terlanggar cawan kaca. Krew telah bersihkan serpihan kaca dan mop lantai serta-merta.',
-      },
-    ];
+    _incidentReports = [];
   }
 
   void _callNumber(String phone) async {
@@ -62,7 +41,7 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      if (mounted) showGlassToast(context, 'Could not open phone dialer', isError: true);
+      if (mounted) showGlassToast(context, 'Gagal membuka pendail telefon', isError: true);
     }
   }
 
@@ -426,7 +405,40 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
               style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ..._incidentReports.map((inc) {
+            if (_incidentReports.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 40,
+                        color: isDark ? Colors.white24 : Colors.black26,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Tiada insiden dilaporkan.',
+                        style: TextStyle(
+                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Premis berada dalam keadaan selamat dan operasi lancar.',
+                        style: TextStyle(
+                          color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ..._incidentReports.map((inc) {
               final sev = inc['severity'] as IncidentSeverity;
               final sevColor = sev == IncidentSeverity.critical
                   ? const Color(0xFFEF4444)

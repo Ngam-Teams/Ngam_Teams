@@ -27,15 +27,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final _service = TeamsSupabaseService.instance;
 
   // Attendance state
-  bool _isCheckedIn = true;
+  bool _isCheckedIn = false;
   bool _isOnBreak = false;
-  DateTime _checkInDateTime = DateTime.now().subtract(const Duration(hours: 4, minutes: 28));
-  String _checkInTimeString = '09:00 AM';
+  DateTime _checkInDateTime = DateTime.now();
+  String _checkInTimeString = '—';
   Timer? _liveClockTimer;
-  Duration _durationWorked = const Duration(hours: 4, minutes: 28);
+  Duration _durationWorked = Duration.zero;
 
-  // Profile state
+  // Profile and Coworkers state
   Map<String, dynamic>? _profile;
+  List<Map<String, dynamic>> _coworkers = [];
 
   // Interactive quick checklist on dashboard
   final List<Map<String, dynamic>> _quickTasks = [
@@ -118,10 +119,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     try {
       final profile = await _service.fetchStaffProfile();
       final todayAttendance = await _service.fetchTodayAttendance();
+      final coworkers = await _service.fetchCoworkers();
 
       if (mounted) {
         setState(() {
           _profile = profile;
+          _coworkers = coworkers;
 
           if (todayAttendance != null) {
             final inStr = todayAttendance['check_in_time'];
@@ -1422,13 +1425,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget _buildCoworkersOnDuty(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final coworkers = [
-      {'name': 'Ahmad Syafii', 'role': 'Ketua Juruwang', 'shift': '08:00 – 16:30', 'avatar': 'A', 'color': const Color(0xFF3B82F6)},
-      {'name': 'Nurul Huda', 'role': 'Barista / Front', 'shift': '14:00 – 22:30', 'avatar': 'N', 'color': const Color(0xFF10B981)},
-      {'name': 'Farid Kamil', 'role': 'Barber Stylist', 'shift': '14:00 – 22:30', 'avatar': 'F', 'color': const Color(0xFFF59E0B)},
-      {'name': 'Chef Danial', 'role': 'Ketua Dapur', 'shift': '13:00 – 22:00', 'avatar': 'D', 'color': const Color(0xFF8B5CF6)},
-    ];
-
     return GlassPanel(
       title: 'Rakan Bertugas Bersama',
       icon: HugeIcons.strokeRoundedUserGroup,
@@ -1439,7 +1435,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '4 Krew Aktif Bertugas Hari Ini',
+                _coworkers.isEmpty
+                    ? 'Tiada Krew Aktif Berdaftar'
+                    : '${_coworkers.length} Krew Aktif Bertugas Hari Ini',
                 style: TextStyle(
                   color: isDark ? Colors.white60 : const Color(0xFF64748B),
                   fontSize: 13,
@@ -1460,83 +1458,111 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
           const SizedBox(height: 16),
 
-          // Teammate list
-          ...coworkers.map((c) {
-            final col = c['color'] as Color;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade200,
-                  ),
-                ),
-                child: Row(
+          if (_coworkers.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Column(
                   children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: col.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          c['avatar'] as String,
-                          style: TextStyle(
-                            color: col,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
+                    Icon(
+                      Icons.people_outline_rounded,
+                      size: 36,
+                      color: isDark ? Colors.white24 : Colors.black26,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            c['name'] as String,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : const Color(0xFF1E293B),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            c['role'] as String,
-                            style: TextStyle(
-                              color: isDark ? Colors.white54 : const Color(0xFF64748B),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        c['shift'] as String,
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : const Color(0xFF475569),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tiada rakan krew didaftarkan lagi.',
+                      style: TextStyle(
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          }),
+            )
+          else
+            ..._coworkers.take(5).map((c) {
+              final name = (c['name'] as String? ?? 'Krew').trim();
+              final role = (c['designation'] as String? ?? c['role'] as String? ?? 'Staf').trim();
+              final initial = name.isNotEmpty ? name[0].toUpperCase() : 'K';
+              const col = Color(0xFF38BDF8);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: col.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            initial,
+                            style: const TextStyle(
+                              color: col,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              role,
+                              style: TextStyle(
+                                color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          c['status'] == 'active' || c['is_active'] == true ? 'Aktif' : 'Staf',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : const Color(0xFF475569),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
         ],
       ),
     );

@@ -72,12 +72,16 @@ class _DashboardShellState extends State<DashboardShell> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final isLandscape = constraints.maxWidth > constraints.maxHeight;
         final isDesktop = constraints.maxWidth >= 800;
+        final isCompactHeight = constraints.maxHeight < 520;
+        final useSidebar = isDesktop || isLandscape;
+
         return Scaffold(
           backgroundColor:
               isDark ? AppColors.darkBackground : AppColors.lightBackground,
           extendBody: true,
-          bottomNavigationBar: isDesktop ? null : _buildBottomNav(context),
+          bottomNavigationBar: useSidebar ? null : _buildBottomNav(context),
           body: Stack(
             children: [
               // Ambient soft radiant blobs for realistic frosted glass refraction
@@ -119,14 +123,14 @@ class _DashboardShellState extends State<DashboardShell> {
               ),
               SafeArea(
                 bottom: false,
-                child: isDesktop
+                child: useSidebar
                     ? Row(
                         children: [
-                          _buildNavigationRail(context, isDark),
-                          Expanded(child: _buildContent(context, isDesktop, isDark)),
+                          _buildNavigationRail(context, isDark, isCompactHeight),
+                          Expanded(child: _buildContent(context, useSidebar, isDark, isCompactHeight)),
                         ],
                       )
-                    : _buildContent(context, isDesktop, isDark),
+                    : _buildContent(context, false, isDark, false),
               ),
             ],
           ),
@@ -147,14 +151,14 @@ class _DashboardShellState extends State<DashboardShell> {
   }
 
   // ─── Navigation Rail (sidebar) ──────────────────────────────
-  Widget _buildNavigationRail(BuildContext context, bool isDark) {
+  Widget _buildNavigationRail(BuildContext context, bool isDark, bool isCompactHeight) {
     final navItems = _getNavItems(context);
 
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
-          width: 220,
+          width: isCompactHeight ? 180 : 220,
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white.withValues(alpha: 0.55),
             border: Border(
@@ -166,18 +170,18 @@ class _DashboardShellState extends State<DashboardShell> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 48),
+              SizedBox(height: isCompactHeight ? 16 : 48),
 
               // Logo / Wordmark
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: isCompactHeight ? 14 : 20),
                 child: Row(
                   children: [
                     Container(
-                      width: 36,
-                      height: 36,
+                      width: isCompactHeight ? 28 : 36,
+                      height: isCompactHeight ? 28 : 36,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(isCompactHeight ? 8 : 10),
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: Image.asset(
@@ -185,7 +189,7 @@ class _DashboardShellState extends State<DashboardShell> {
                         fit: BoxFit.cover,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -193,16 +197,16 @@ class _DashboardShellState extends State<DashboardShell> {
                           'Ngam',
                           style: TextStyle(
                             color: isDark ? Colors.white : const Color(0xFF1E293B),
-                            fontSize: 16,
+                            fontSize: isCompactHeight ? 14 : 16,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.3,
                           ),
                         ),
-                        const Text(
+                        Text(
                           'Teams',
                           style: TextStyle(
                             color: AppColors.primary,
-                            fontSize: 11,
+                            fontSize: isCompactHeight ? 9 : 11,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.2,
                           ),
@@ -213,7 +217,7 @@ class _DashboardShellState extends State<DashboardShell> {
                 ),
               ),
 
-              const SizedBox(height: 40),
+              SizedBox(height: isCompactHeight ? 16 : 40),
 
               // Nav items
               ...navItems.asMap().entries.map((entry) {
@@ -226,12 +230,13 @@ class _DashboardShellState extends State<DashboardShell> {
                   label: item.label,
                   selected: selected,
                   isDark: isDark,
+                  isCompact: isCompactHeight,
                   onTap: () => _onTabSelected(index),
                 );
               }),
 
               const Spacer(),
-              const SizedBox(height: 24),
+              SizedBox(height: isCompactHeight ? 12 : 24),
             ],
           ),
         ),
@@ -240,13 +245,13 @@ class _DashboardShellState extends State<DashboardShell> {
   }
 
   // ─── Content Area ───────────────────────────────────────────
-  Widget _buildContent(BuildContext context, bool isDesktop, bool isDark) {
+  Widget _buildContent(BuildContext context, bool useSidebar, bool isDark, bool isCompactHeight) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        isDesktop ? 32 : 16,
-        isDesktop ? 32 : 16,
-        isDesktop ? 32 : 16,
-        isDesktop ? 32 : 0,
+        isCompactHeight ? 16 : (useSidebar ? 28 : 16),
+        isCompactHeight ? 12 : (useSidebar ? 24 : 16),
+        isCompactHeight ? 16 : (useSidebar ? 28 : 16),
+        isCompactHeight ? 12 : (useSidebar ? 24 : 0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,14 +268,14 @@ class _DashboardShellState extends State<DashboardShell> {
                       _getPageTitle(context),
                       style: TextStyle(
                         color: isDark ? Colors.white : const Color(0xFF1E293B),
-                        fontSize: 28,
+                        fontSize: isCompactHeight ? 20 : (useSidebar ? 26 : 28),
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Row(
                       children: [
                         Text(
@@ -386,6 +391,7 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool selected;
   final bool isDark;
+  final bool isCompact;
   final VoidCallback onTap;
 
   const _NavItem({
@@ -393,6 +399,7 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.isDark,
+    this.isCompact = false,
     required this.onTap,
   });
 
@@ -402,8 +409,14 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        margin: EdgeInsets.symmetric(
+          horizontal: isCompact ? 8 : 12,
+          vertical: isCompact ? 2 : 3,
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: isCompact ? 10 : 14,
+          vertical: isCompact ? 8 : 12,
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: selected
@@ -417,18 +430,22 @@ class _NavItem extends StatelessWidget {
               color: selected
                   ? AppColors.primary
                   : (isDark ? Colors.white38 : const Color(0xFF94A3B8)),
-              size: 20,
+              size: isCompact ? 16 : 20,
               strokeWidth: 2.1,
             ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: TextStyle(
-                color: selected
-                    ? AppColors.primary
-                    : (isDark ? Colors.white70 : const Color(0xFF475569)),
-                fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
-                fontSize: 14,
+            SizedBox(width: isCompact ? 8 : 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: selected
+                      ? AppColors.primary
+                      : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+                  fontSize: isCompact ? 12 : 14,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

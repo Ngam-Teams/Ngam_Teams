@@ -1,9 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'release_fetcher/release_fetcher.dart';
 import '../../widgets/glass_toast.dart';
 
 class AppReleaseInfo {
@@ -86,22 +87,11 @@ class AppUpdateService {
     try {
       final activeVersion = current ?? await getAppVersion();
 
-      final client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 10);
-
-      final uri = Uri.parse('https://api.github.com/repos/$orgName/$repo/releases/latest');
-      final request = await client.getUrl(uri);
-      request.headers.set('User-Agent', 'NgamTeamsApp');
-      request.headers.set('Accept', 'application/vnd.github.v3+json');
-
-      final response = await request.close();
-      if (response.statusCode != 200) {
-        client.close();
+      final url = 'https://api.github.com/repos/$orgName/$repo/releases/latest';
+      final body = await ReleaseFetcher.fetchUrl(url);
+      if (body == null || body.isEmpty) {
         return null;
       }
-
-      final body = await response.transform(utf8.decoder).join();
-      client.close();
 
       final data = json.decode(body) as Map<String, dynamic>;
       final tagName = data['tag_name'] as String? ?? '';
@@ -426,6 +416,7 @@ class AppUpdateService {
     String? current,
     String repo = repoName,
   }) async {
+    if (kIsWeb) return;
     await Future.delayed(const Duration(seconds: 2));
     if (!context.mounted) return;
 

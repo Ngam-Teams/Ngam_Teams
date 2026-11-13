@@ -50,24 +50,7 @@ class _TaskChecklistScreenState extends State<TaskChecklistScreen> with SingleTi
       {'title': 'Kunci pintu belakang, tutup aircond & aktifkan penggera', 'done': false},
     ];
 
-    _handoverNotes = [
-      {
-        'id': 'HN-01',
-        'author': 'Ahmad (Syif Pagi)',
-        'time': '02:15 PM',
-        'note': 'Ais batu tinggal 1 beg sahaja di freezer. Lori ais dah janji hantar jam 4:30 petang nanti.',
-        'tag': 'PENTING',
-        'color': const Color(0xFFF59E0B),
-      },
-      {
-        'id': 'HN-02',
-        'author': 'Chef Danial',
-        'time': '01:30 PM',
-        'note': 'Rendang daging periuk kedua siap jam 2 petang. Kuah laksa masih cukup untuk dinner.',
-        'tag': 'DAPUR',
-        'color': const Color(0xFF10B981),
-      },
-    ];
+    _handoverNotes = [];
   }
 
   @override
@@ -380,9 +363,18 @@ class _TaskChecklistScreenState extends State<TaskChecklistScreen> with SingleTi
             ],
           ),
           const SizedBox(height: 6),
-          SizedBox(
-            height: 90,
-            child: ListView.builder(
+          if (_handoverNotes.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Tiada nota serahan syif buat masa ini. Tekan + Catat untuk menambah.',
+                style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 11),
+              ),
+            )
+          else
+            SizedBox(
+              height: 90,
+              child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _handoverNotes.length,
               itemBuilder: (ctx, idx) {

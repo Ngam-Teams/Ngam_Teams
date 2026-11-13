@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/teams_supabase_service.dart';
 import '../../../widgets/glass_toast.dart';
 
 // ============================================================
@@ -16,42 +18,61 @@ class ShiftRosterScreen extends StatefulWidget {
 
 class _ShiftRosterScreenState extends State<ShiftRosterScreen> {
   late List<Map<String, dynamic>> _weeklyRoster;
-  late List<Map<String, dynamic>> _coworkersToday;
-  late List<Map<String, dynamic>> _swapRequests;
+  List<Map<String, dynamic>> _coworkersToday = [];
+  List<Map<String, dynamic>> _swapRequests = [];
 
   @override
   void initState() {
     super.initState();
-    _weeklyRoster = [
-      {'day': 'Isnin (Mon)', 'date': '28 Sep', 'shift': 'Shift Pagi', 'time': '08:00 AM – 04:30 PM', 'isOff': false, 'isToday': false},
-      {'day': 'Selasa (Tue)', 'date': '29 Sep', 'shift': 'Shift Pagi', 'time': '08:00 AM – 04:30 PM', 'isOff': false, 'isToday': false},
-      {'day': 'Rabu (Wed)', 'date': '30 Sep', 'shift': 'Shift Petang', 'time': '02:00 PM – 10:30 PM', 'isOff': false, 'isToday': true},
-      {'day': 'Khamis (Thu)', 'date': '01 Oct', 'shift': 'Shift Petang', 'time': '02:00 PM – 10:30 PM', 'isOff': false, 'isToday': false},
-      {'day': 'Jumaat (Fri)', 'date': '02 Oct', 'shift': 'Shift Penuh (Rush)', 'time': '10:00 AM – 10:00 PM', 'isOff': false, 'isToday': false},
-      {'day': 'Sabtu (Sat)', 'date': '03 Oct', 'shift': 'Shift Pagi', 'time': '08:00 AM – 04:30 PM', 'isOff': false, 'isToday': false},
-      {'day': 'Ahad (Sun)', 'date': '04 Oct', 'shift': 'Cuti Rehat (Off Day)', 'time': '—', 'isOff': true, 'isToday': false},
-    ];
+    final now = DateTime.now();
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final days = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu', 'Ahad'];
 
-    _coworkersToday = [
-      {'name': 'Ahmad Syafii', 'role': 'Ketua Juruwang', 'shift': '08:00 AM – 04:30 PM', 'avatar': 'A'},
-      {'name': 'Nurul Huda', 'role': 'Barista / Front', 'shift': '02:00 PM – 10:30 PM', 'avatar': 'N'},
-      {'name': 'Farid Kamil', 'role': 'Master Barber / Stylist', 'shift': '02:00 PM – 10:30 PM', 'avatar': 'F'},
-      {'name': 'Chef Danial', 'role': 'Ketua Dapur', 'shift': '01:00 PM – 10:00 PM', 'avatar': 'D'},
-    ];
+    _weeklyRoster = List.generate(7, (i) {
+      final date = monday.add(Duration(days: i));
+      final isToday = date.day == now.day && date.month == now.month && date.year == now.year;
+      final isOff = i == 6; // Sunday
+      final dateStr = DateFormat('dd MMM').format(date);
+      return {
+        'day': days[i],
+        'date': dateStr,
+        'shift': isOff ? 'Cuti Rehat (Off Day)' : (i == 4 ? 'Shift Penuh' : 'Shift Biasa'),
+        'time': isOff ? '—' : '09:00 AM – 06:00 PM',
+        'isOff': isOff,
+        'isToday': isToday,
+      };
+    });
 
-    _swapRequests = [
-      {
-        'id': 'SW-101',
-        'targetDate': 'Khamis, 01 Oct',
-        'targetStaff': 'Nurul Huda',
-        'status': 'Pending Approval',
-        'reason': 'Kecemasan keluarga di kampung',
-      },
-    ];
+    _loadCoworkers();
+  }
+
+  Future<void> _loadCoworkers() async {
+    try {
+      final list = await TeamsSupabaseService.instance.fetchCoworkers();
+      if (mounted) {
+        setState(() {
+          _coworkersToday = list.map((c) {
+            final name = (c['name'] as String? ?? 'Krew').trim();
+            final role = (c['designation'] as String? ?? c['role'] as String? ?? 'Staf').trim();
+            final initial = name.isNotEmpty ? name[0].toUpperCase() : 'K';
+            return {
+              'name': name,
+              'role': role,
+              'shift': c['status'] == 'active' ? 'Aktif' : 'Staf',
+              'avatar': initial,
+            };
+          }).toList();
+        });
+      }
+    } catch (_) {}
   }
 
   void _openShiftSwapModal() {
-    String selectedDate = 'Khamis, 01 Oct';
+    if (_coworkersToday.isEmpty) {
+      showGlassToast(context, 'Tiada rakan krew berdaftar untuk ditukar syif.', isError: true);
+      return;
+    }
+    String selectedDate = 'Khamis';
     String selectedCoworker = _coworkersToday.first['name'] as String;
     final reasonCtrl = TextEditingController();
 
@@ -265,9 +286,18 @@ class _ShiftRosterScreenState extends State<ShiftRosterScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 110,
-              child: ListView.builder(
+            if (_coworkersToday.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Text(
+                  'Tiada rakan krew berdaftar buat masa ini.',
+                  style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 13),
+                ),
+              )
+            else
+              SizedBox(
+                height: 110,
+                child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: _coworkersToday.length,
                 itemBuilder: (ctx, idx) {

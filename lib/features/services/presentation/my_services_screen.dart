@@ -38,12 +38,13 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
   List<Map<String, dynamic>> _queueTickets = [];
 
   // Appointments
-  late List<Map<String, dynamic>> _myServices;
+  List<Map<String, dynamic>> _myServices = [];
+  bool _isLoadingBookings = false;
 
   @override
   void initState() {
     super.initState();
-    _initDemoServices();
+    _loadServices();
     _loadQueueTickets();
 
     // Auto-refresh queue every 15 seconds
@@ -60,61 +61,43 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
     super.dispose();
   }
 
-  void _initDemoServices() {
-    _myServices = [
-      {
-        'id': 'BK-1082',
-        'customerName': 'Amirul Hakim',
-        'phone': '+60 17-234 5678',
-        'serviceName': 'Premium Haircut & Beard Trim',
-        'timeSlot': 'Today, 2:30 PM (in 15m)',
-        'duration': '45 mins',
-        'price': 50.00,
-        'commission': 17.50,
-        'status': ServiceStatus.inProgress,
-        'notes': 'Prefers sharp skin fade. Use beard oil after shave.',
-        'dietary': 'Customer requested window seat barber chair.',
-      },
-      {
-        'id': 'BK-1085',
-        'customerName': 'Sarah Tan',
-        'phone': '+60 12-889 1234',
-        'serviceName': 'Organic Hair Treatment & Blowdry',
-        'timeSlot': 'Today, 3:30 PM',
-        'duration': '60 mins',
-        'price': 85.00,
-        'commission': 25.00,
-        'status': ServiceStatus.pending,
-        'notes': 'Sensitive scalp. Please use silicone-free organic shampoo.',
-        'dietary': '',
-      },
-      {
-        'id': 'BK-1080',
-        'customerName': 'Zulhilmi Rahman',
-        'phone': '+60 19-334 9988',
-        'serviceName': 'Classic Gentleman Haircut',
-        'timeSlot': 'Today, 11:00 AM',
-        'duration': '30 mins',
-        'price': 35.00,
-        'commission': 12.00,
-        'status': ServiceStatus.completed,
-        'notes': 'Side parting. Customer gave RM 10 personal tip!',
-        'dietary': '',
-      },
-      {
-        'id': 'BK-1090',
-        'customerName': 'Jessica Wong',
-        'phone': '+60 16-555 4321',
-        'serviceName': 'Full Hair Coloring & Scalp Spa',
-        'timeSlot': 'Tomorrow, 10:30 AM',
-        'duration': '90 mins',
-        'price': 140.00,
-        'commission': 42.00,
-        'status': ServiceStatus.pending,
-        'notes': 'Reference ash-grey shade saved in booking attachments.',
-        'dietary': '',
-      },
-    ];
+  Future<void> _loadServices() async {
+    setState(() => _isLoadingBookings = true);
+    try {
+      final list = await TeamsSupabaseService.instance.fetchMyTempahan();
+      if (mounted) {
+        setState(() {
+          _myServices = list.map((b) {
+            ServiceStatus status = ServiceStatus.pending;
+            final s = (b['status'] as String? ?? '').toLowerCase();
+            if (s == 'completed' || s == 'selesai') {
+              status = ServiceStatus.completed;
+            } else if (s == 'in_progress' || s == 'serving' || s == 'sedang_servis') {
+              status = ServiceStatus.inProgress;
+            } else if (s == 'cancelled' || s == 'batal') {
+              status = ServiceStatus.cancelled;
+            }
+
+            return {
+              'id': b['id'] ?? '',
+              'customerName': b['customer_name'] ?? b['name'] ?? 'Pelanggan',
+              'phone': b['customer_phone'] ?? b['phone'] ?? '',
+              'serviceName': b['service_name'] ?? b['title'] ?? 'Perkhidmatan',
+              'timeSlot': '${b['booking_date'] ?? ''} ${b['booking_time'] ?? ''}'.trim(),
+              'duration': b['duration'] != null ? '${b['duration']} min' : '30 min',
+              'price': (b['total_amount'] as num?)?.toDouble() ?? (b['price'] as num?)?.toDouble() ?? 0.0,
+              'commission': (b['commission_amount'] as num?)?.toDouble() ?? 0.0,
+              'status': status,
+              'notes': b['notes'] ?? '',
+              'dietary': '',
+            };
+          }).toList();
+          _isLoadingBookings = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingBookings = false);
+    }
   }
 
   Future<void> _loadQueueTickets({bool silent = false}) async {
@@ -124,82 +107,10 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
     try {
       final tickets = await TeamsSupabaseService.instance.fetchQueueTickets();
       if (mounted) {
-        if (tickets.isNotEmpty) {
-          setState(() {
-            _queueTickets = tickets;
-            _isLoadingQueue = false;
-          });
-        } else {
-          // Fallback realistic demo tickets if backend has none yet
-          if (_queueTickets.isEmpty) {
-            _queueTickets = [
-              {
-                'id': 'tk-001',
-                'ticket_number': 'A001',
-                'customer_name': 'Hafiz Firdaus',
-                'phone_number': '+60 12-345 6789',
-                'service_name': 'Classic Fade & Beard Trim',
-                'station_or_chair': 'Kerusi 1',
-                'assigned_staff_name': 'Saya (Barber)',
-                'status': 'serving',
-                'estimated_wait_minutes': 0,
-                'created_at': DateTime.now().subtract(const Duration(minutes: 25)).toIso8601String(),
-                'serving_at': DateTime.now().subtract(const Duration(minutes: 10)).toIso8601String(),
-              },
-              {
-                'id': 'tk-002',
-                'ticket_number': 'A002',
-                'customer_name': 'Khairul Anwar',
-                'phone_number': '+60 13-987 6543',
-                'service_name': 'Haircut & Head Wash',
-                'station_or_chair': 'Kerusi 2',
-                'assigned_staff_name': null,
-                'status': 'calling',
-                'estimated_wait_minutes': 5,
-                'created_at': DateTime.now().subtract(const Duration(minutes: 15)).toIso8601String(),
-                'called_at': DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String(),
-              },
-              {
-                'id': 'tk-003',
-                'ticket_number': 'A003',
-                'customer_name': 'Danish Aiman',
-                'phone_number': '+60 17-654 3210',
-                'service_name': 'Pompadour Styling',
-                'station_or_chair': null,
-                'assigned_staff_name': null,
-                'status': 'waiting',
-                'estimated_wait_minutes': 15,
-                'created_at': DateTime.now().subtract(const Duration(minutes: 8)).toIso8601String(),
-              },
-              {
-                'id': 'tk-004',
-                'ticket_number': 'A004',
-                'customer_name': 'Muhammad Syukri',
-                'phone_number': '+60 18-223 3445',
-                'service_name': 'Kids Haircut',
-                'station_or_chair': null,
-                'assigned_staff_name': null,
-                'status': 'waiting',
-                'estimated_wait_minutes': 25,
-                'created_at': DateTime.now().subtract(const Duration(minutes: 3)).toIso8601String(),
-              },
-              {
-                'id': 'tk-000',
-                'ticket_number': 'A000',
-                'customer_name': 'Azman Shah',
-                'phone_number': '+60 11-123 4567',
-                'service_name': 'Signature Buzzcut',
-                'station_or_chair': 'Kerusi 1',
-                'assigned_staff_name': 'Saya (Barber)',
-                'status': 'completed',
-                'estimated_wait_minutes': 0,
-                'created_at': DateTime.now().subtract(const Duration(hours: 1, minutes: 10)).toIso8601String(),
-                'completed_at': DateTime.now().subtract(const Duration(minutes: 35)).toIso8601String(),
-              },
-            ];
-          }
-          setState(() => _isLoadingQueue = false);
-        }
+        setState(() {
+          _queueTickets = tickets;
+          _isLoadingQueue = false;
+        });
       }
     } catch (_) {
       if (mounted) setState(() => _isLoadingQueue = false);
@@ -432,7 +343,7 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
         ? 'Servis Bermula (Sedang Dijalankan)'
         : newStatus == ServiceStatus.completed
             ? 'Servis Selesai! Komisen dikreditkan.'
-            : 'Status dikemaskini';
+            : 'Status dikemas kini';
     showGlassToast(context, statusLabel);
   }
 

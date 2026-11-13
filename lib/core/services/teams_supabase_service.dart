@@ -20,27 +20,42 @@ class TeamsSupabaseService {
       // 1. Check team_members by user_id
       final teamRes = await _client
           .from('team_members')
-          .select('business_id')
+          .select('business_id, status, is_active')
           .eq('user_id', user.id)
-          .eq('status', 'active')
           .maybeSingle();
 
       if (teamRes != null && teamRes['business_id'] != null) {
-        return teamRes['business_id'] as String;
+        final isActive = teamRes['is_active'] != false && teamRes['status'] != 'inactive';
+        if (isActive) {
+          return teamRes['business_id'] as String;
+        }
       }
 
       // 1b. If not linked by user_id yet, check by email and auto-link to this staff user
       if (user.email != null && user.email!.isNotEmpty) {
-        final inviteRes = await _client
-            .from('team_members')
-            .select('id, business_id')
-            .ilike('email', user.email!.trim())
-            .maybeSingle();
+        Map<String, dynamic>? inviteRes;
+        try {
+          inviteRes = await _client
+              .from('team_members')
+              .select('id, business_id')
+              .ilike('user_email', user.email!.trim())
+              .maybeSingle();
+        } catch (_) {}
+        if (inviteRes == null) {
+          try {
+            inviteRes = await _client
+                .from('team_members')
+                .select('id, business_id')
+                .ilike('email', user.email!.trim())
+                .maybeSingle();
+          } catch (_) {}
+        }
 
         if (inviteRes != null && inviteRes['business_id'] != null) {
           try {
             await _client.from('team_members').update({
               'user_id': user.id,
+              'is_active': true,
               'status': 'active',
             }).eq('id', inviteRes['id']);
           } catch (e) {
@@ -118,7 +133,6 @@ class TeamsSupabaseService {
           'date': todayStr,
           'check_in_time': now.toIso8601String(),
           'status': 'present',
-          if (notes != null) 'notes': notes,
         }, onConflict: 'business_id,user_id,date')
         .select()
         .single();
@@ -337,16 +351,29 @@ class TeamsSupabaseService {
 
       // 2. If not linked by user_id yet, try matching by email and auto-link
       if (member == null && user.email != null && user.email!.isNotEmpty) {
-        final emailMatch = await _client
-            .from('team_members')
-            .select('*, businesses(business_name, business_industry, address_line, business_city, state)')
-            .ilike('email', user.email!.trim())
-            .maybeSingle();
+        Map<String, dynamic>? emailMatch;
+        try {
+          emailMatch = await _client
+              .from('team_members')
+              .select('*, businesses(business_name, business_industry, address_line, business_city, state)')
+              .ilike('user_email', user.email!.trim())
+              .maybeSingle();
+        } catch (_) {}
+        if (emailMatch == null) {
+          try {
+            emailMatch = await _client
+                .from('team_members')
+                .select('*, businesses(business_name, business_industry, address_line, business_city, state)')
+                .ilike('email', user.email!.trim())
+                .maybeSingle();
+          } catch (_) {}
+        }
 
         if (emailMatch != null) {
           try {
             await _client.from('team_members').update({
               'user_id': user.id,
+              'is_active': true,
               'status': 'active',
             }).eq('id', emailMatch['id']);
           } catch (e) {
@@ -555,6 +582,83 @@ class TeamsSupabaseService {
     } catch (e) {
       debugPrint('Error cancelling queue ticket: $e');
       return false;
+    }
+  }
+
+  /// ==========================================
+  /// COWORKERS & PAYROLL
+  /// ==========================================
+
+  /// Fetches colleagues/coworkers belonging to the same business.
+  Future<List<Map<String, dynamic>>> fetchCoworkers() async {
+    try {
+      final businessId = await getCurrentBusinessId();
+      if (businessId == null) return [];
+
+      final res = await _client
+          .from('team_members')
+          .select('id, name, designation, role, status, is_active, user_email, email')
+          .eq('business_id', businessId)
+          .order('name');
+
+      return List<Map<String, dynamic>>.from(res);
+    } catch (e) {
+      debugPrint('Error fetching coworkers: $e');
+      return [];
+    }
+  }
+
+  /// Fetches monthly payroll records for the logged-in staff.
+  Future<List<Map<String, dynamic>>> fetchMyPayroll() async {
+    final user = currentUser;
+    if (user == null) return [];
+
+    try {
+      final member = await _client
+          .from('team_members')
+          .select('id, business_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (member == null) return [];
+
+      final res = await _client
+          .from('monthly_payrolls')
+          .select()
+          .eq('staff_id', member['id'])
+          .order('created_at', ascending: false);
+
+      return List<Map<String, dynamic>>.from(res);
+    } catch (e) {
+      debugPrint('Error fetching my payroll: $e');
+      return [];
+    }
+  }
+
+  /// Fetches staff payroll settings (base salary, commission rate) for current staff.
+  Future<Map<String, dynamic>?> fetchMyPayrollSettings() async {
+    final user = currentUser;
+    if (user == null) return null;
+
+    try {
+      final member = await _client
+          .from('team_members')
+          .select('id, business_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (member == null) return null;
+
+      final res = await _client
+          .from('staff_payroll_settings')
+          .select()
+          .eq('staff_id', member['id'])
+          .maybeSingle();
+
+      return res != null ? Map<String, dynamic>.from(res) : null;
+    } catch (e) {
+      debugPrint('Error fetching my payroll settings: $e');
+      return null;
     }
   }
 }
