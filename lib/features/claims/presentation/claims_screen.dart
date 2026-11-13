@@ -22,48 +22,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
   @override
   void initState() {
     super.initState();
-    _claims = [
-      {
-        'id': 'CLM-8821',
-        'category': 'Ais Batu (Ice Refill)',
-        'amount': 15.00,
-        'vendor': 'Kedai Runcit Ah Seng',
-        'date': 'Hari Ini, 10:45 AM',
-        'status': ClaimStatus.pending,
-        'hasReceipt': true,
-        'notes': 'Stok ais habis waktu lunch rush.',
-      },
-      {
-        'id': 'CLM-8819',
-        'category': 'Tong Gas Memasak (Petroleum)',
-        'amount': 42.00,
-        'vendor': 'Stesen Minyak Petronas',
-        'date': 'Semalam, 01:15 PM',
-        'status': ClaimStatus.approved,
-        'hasReceipt': true,
-        'notes': 'Tong gas dapur ganti waktu memasak rendang.',
-      },
-      {
-        'id': 'CLM-8802',
-        'category': 'Petrol Hantar Makanan (COD)',
-        'amount': 20.00,
-        'vendor': 'Shell Bandar Hilir',
-        'date': '26 Sep 2026',
-        'status': ClaimStatus.reimbursed,
-        'hasReceipt': true,
-        'notes': 'Hantar 50 pek bento tempahan korporat.',
-      },
-      {
-        'id': 'CLM-8790',
-        'category': 'Sabun Cuci & Plastik Sampah',
-        'amount': 28.50,
-        'vendor': 'Speedmart 99',
-        'date': '22 Sep 2026',
-        'status': ClaimStatus.reimbursed,
-        'hasReceipt': true,
-        'notes': 'Sabun pencuci pinggan & mop lantai.',
-      },
-    ];
+    _claims = [];
   }
 
   double get _totalPending => _claims.where((c) => c['status'] == ClaimStatus.pending).fold(0.0, (sum, c) => sum + (c['amount'] as double));
@@ -121,7 +80,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Tuntut semula duit anda bagi pembelian kecemasan atau alatan kedai. Resit diperlukan.',
+                      'Tuntut semula wang anda bagi pembelian kecemasan atau alatan kedai. Resit diperlukan.',
                       style: TextStyle(color: isDark ? Colors.white60 : const Color(0xFF64748B), fontSize: 13),
                     ),
                     const SizedBox(height: 20),
@@ -180,7 +139,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                       controller: vendorCtrl,
                       style: TextStyle(color: isDark ? Colors.white : Colors.black),
                       decoration: InputDecoration(
-                        hintText: 'Cth: Kedai Runcit Ah Seng / Petronas',
+                        hintText: 'Cth: Kedai Runcit / Stesen Minyak',
                         filled: true,
                         fillColor: isDark ? const Color(0xFF0F0F1B) : const Color(0xFFF1F5F9),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
@@ -192,7 +151,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                     GestureDetector(
                       onTap: () {
                         setModalState(() => receiptAttached = true);
-                        showGlassToast(context, 'Foto resit berjaya dimuat naik!');
+                        showGlassToast(context, 'Foto resit berjaya dilampirkan!');
                       },
                       child: Container(
                         padding: const EdgeInsets.all(14),
@@ -216,7 +175,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              receiptAttached ? 'Foto Resit Dilampirkan (IMG_2026.jpg)' : 'Ambil Foto Resit Belanja',
+                              receiptAttached ? 'Foto Resit Dilampirkan' : 'Ambil Foto Resit Belanja',
                               style: TextStyle(
                                 color: receiptAttached ? const Color(0xFF10B981) : AppColors.primary,
                                 fontWeight: FontWeight.bold,
@@ -236,7 +195,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                       controller: notesCtrl,
                       style: TextStyle(color: isDark ? Colors.white : Colors.black),
                       decoration: InputDecoration(
-                        hintText: 'Cth: Beli 2 beg ais kerana ais blender habis',
+                        hintText: 'Cth: Beli 2 beg ais kerana stok habis',
                         filled: true,
                         fillColor: isDark ? const Color(0xFF0F0F1B) : const Color(0xFFF1F5F9),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
@@ -274,7 +233,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                           });
 
                           Navigator.pop(ctx);
-                          showGlassToast(context, 'Tuntutan RM ${amt.toStringAsFixed(2)} berjaya dihantar untuk kelulusan Boss!');
+                          showGlassToast(context, 'Tuntutan RM ${amt.toStringAsFixed(2)} berjaya dihantar untuk kelulusan pengurusan!');
                         },
                         child: const Text('Hantar Tuntutan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                       ),
@@ -314,7 +273,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
               ),
             ),
             Text(
-              'Klaim pembelian kecemasan & bayaran balik tunai',
+              'Tuntut pembelian kecemasan & bayaran balik tunai',
               style: TextStyle(
                 color: isDark ? Colors.white54 : const Color(0xFF64748B),
                 fontSize: 12,
@@ -325,7 +284,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF10B981), size: 24),
-            tooltip: 'Buat Tuntutan Baru',
+            tooltip: 'Buat Tuntutan Baharu',
             onPressed: _openSubmitClaimModal,
           ),
         ],
@@ -395,7 +354,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                 ),
                 onPressed: _openSubmitClaimModal,
                 icon: const Icon(Icons.receipt_long_rounded, size: 20),
-                label: const Text('Buat Tuntutan Baru (+ Resit)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                label: const Text('Buat Tuntutan Baharu (+ Resit)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               ),
             ),
             const SizedBox(height: 28),
@@ -406,7 +365,28 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
               style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ..._claims.map((clm) => _buildClaimCard(clm, isDark)),
+            if (_claims.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF161624) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.receipt_long_outlined, color: isDark ? Colors.white38 : Colors.black38, size: 36),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Tiada tuntutan perbelanjaan direkodkan.',
+                      style: TextStyle(color: isDark ? Colors.white54 : const Color(0xFF64748B), fontSize: 13),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ..._claims.map((clm) => _buildClaimCard(clm, isDark)),
           ],
         ),
       ),
@@ -425,10 +405,12 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
             : const Color(0xFF10B981);
 
     final statusText = isPending
-        ? 'Menunggu Boss'
+        ? 'Menunggu Kelulusan'
         : isApproved
             ? 'Diluluskan'
             : 'Telah Dibayar';
+
+    final amountVal = (clm['amount'] as num?)?.toDouble() ?? 0.0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -454,7 +436,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                'RM ',
+                'RM ${amountVal.toStringAsFixed(2)}',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
             ],
@@ -464,7 +446,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  ' • ',
+                  '${clm['vendor']} • ${clm['date']}',
                   style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

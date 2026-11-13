@@ -53,7 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         showGlassToast(
           context,
-          'Your profile was updated successfully!',
+          'Profil anda telah berjaya dikemas kini!',
           customIcon: Icons.check_circle_rounded,
           customColor: AppColors.success,
         );
@@ -63,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         showGlassToast(
           context,
-          'Failed to update profile: $e',
+          'Gagal mengemas kini profil: $e',
           isError: true,
         );
       }
@@ -73,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showEditProfileSheet(BuildContext context, bool isDark) {
     final currentName = _profile?['name'] ?? _service.currentUser?.email?.split('@').first ?? '';
     final currentPhone = _profile?['phone'] ?? '';
-    final currentDesignation = _profile?['designation'] ?? 'Staff';
+    final currentDesignation = _profile?['designation'] ?? 'Staf';
     final currentOffice = _profile?['office_base'] ?? '';
 
     final nameCtrl = TextEditingController(text: currentName);
@@ -118,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Edit My Profile',
+                                'Sunting Profil Saya',
                                 style: TextStyle(
                                   color: isDark ? Colors.white : const Color(0xFF1E293B),
                                   fontSize: 18,
@@ -135,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ],
                           ),
                           Text(
-                            'Update your contact details and job info for your team roster.',
+                            'Kemas kini butiran hubungan dan jawatan anda untuk rekod pasukan.',
                             style: TextStyle(
                               color: isDark ? Colors.white54 : const Color(0xFF64748B),
                               fontSize: 13,
@@ -146,16 +146,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           // Name field
                           _buildSheetField(
                             isDark: isDark,
-                            label: 'Full Name',
+                            label: 'Nama Penuh',
                             controller: nameCtrl,
-                            hint: 'Your full name',
+                            hint: 'Nama penuh anda',
                           ),
                           const SizedBox(height: 14),
 
                           // Phone field
                           _buildSheetField(
                             isDark: isDark,
-                            label: 'Phone Number',
+                            label: 'Nombor Telefon',
                             controller: phoneCtrl,
                             hint: '+60 12-345 6789',
                             keyboardType: TextInputType.phone,
@@ -165,18 +165,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           // Designation field
                           _buildSheetField(
                             isDark: isDark,
-                            label: 'Job Title / Designation',
+                            label: 'Jawatan / Peranan',
                             controller: designationCtrl,
-                            hint: 'e.g. Senior Barista / Cashier',
+                            hint: 'cth: Barista Kanan / Juruwang',
                           ),
                           const SizedBox(height: 14),
 
                           // Office base field
                           _buildSheetField(
                             isDark: isDark,
-                            label: 'Branch / Work Location',
+                            label: 'Cawangan / Lokasi Kerja',
                             controller: officeCtrl,
-                            hint: 'e.g. Pavilion Branch / Main Store',
+                            hint: 'cth: Cawangan Utama',
                           ),
                           const SizedBox(height: 24),
 
@@ -215,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                     )
                                   : const Text(
-                                      'Save & Update Profile',
+                                      'Simpan & Kemas Kini Profil',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15,
@@ -274,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Connect Workplace',
+                              'Pautkan Tempat Kerja',
                               style: TextStyle(
                                 color: isDark ? Colors.white : const Color(0xFF1E293B),
                                 fontSize: 18,
@@ -292,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Enter the Staff Code provided by your employer (e.g. STF-001) to link your account to your workplace.',
+                          'Masukkan Kod Staf yang diberikan oleh majikan anda (cth: STF-001) untuk memautkan akaun anda ke tempat kerja.',
                           style: TextStyle(
                             color: isDark ? Colors.white54 : const Color(0xFF64748B),
                             fontSize: 13,
@@ -309,7 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             letterSpacing: 2.0,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'e.g. STF-001',
+                            hintText: 'cth: STF-001',
                             hintStyle: TextStyle(
                               color: isDark ? Colors.white30 : Colors.black26,
                               letterSpacing: 1,
@@ -386,7 +386,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       if (res['success'] == true) {
                                         showGlassToast(
                                           context,
-                                          res['message'] ?? 'Successfully linked!',
+                                          res['message'] ?? 'Berjaya dipautkan!',
                                           customIcon: Icons.check_circle_rounded,
                                           customColor: AppColors.success,
                                         );
@@ -394,7 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       } else {
                                         showGlassToast(
                                           context,
-                                          res['message'] ?? 'Failed to link code',
+                                          res['message'] ?? 'Gagal memautkan kod staf',
                                           isError: true,
                                         );
                                       }
@@ -410,7 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   )
                                 : const Text(
-                                    'Link My Workplace',
+                                    'Pautkan Tempat Kerja Saya',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
@@ -463,7 +463,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Workplace Not Linked Yet',
+                      'Tempat Kerja Belum Dipautkan',
                       style: TextStyle(
                         color: isDark ? Colors.white : const Color(0xFF1E293B),
                         fontSize: 15,
@@ -472,7 +472,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Connect with your employer\'s Staff Code to view your shifts, orders & roster.',
+                      'Sambungkan akaun anda menggunakan Kod Staf majikan untuk melihat jadual syif, giliran & tempahan.',
                       style: TextStyle(
                         color: isDark ? Colors.white70 : const Color(0xFF64748B),
                         fontSize: 12,
@@ -491,7 +491,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () => _showEnterStaffCodeSheet(context, isDark),
               icon: const Icon(Icons.badge_outlined, size: 18),
               label: const Text(
-                'Enter Staff Code to Connect',
+                'Masukkan Kod Staf untuk Sambung',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               style: ElevatedButton.styleFrom(
@@ -547,7 +547,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Linked as $staffCode • Active Staff Member',
+                  'Dipautkan sebagai $staffCode • Anggota Krew Aktif',
                   style: const TextStyle(
                     color: Color(0xFF10B981),
                     fontSize: 12,
@@ -559,7 +559,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () => _showEnterStaffCodeSheet(context, isDark),
-            child: const Text('Change', style: TextStyle(fontSize: 12, color: AppColors.primary)),
+            child: const Text('Tukar', style: TextStyle(fontSize: 12, color: AppColors.primary)),
           ),
         ],
       ),
@@ -629,17 +629,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final bool isLinked = _profile != null && _profile?['business_id'] != null;
-    final String staffName = _profile?['name'] ?? _service.currentUser?.email?.split('@').first ?? 'Staff Member';
-    final String staffEmail = _profile?['email'] ?? _service.currentUser?.email ?? 'staff@ngam.my';
-    final String staffPhone = _profile?['phone'] ?? 'Not set';
-    final String staffCode = isLinked ? (_profile?['staff_code'] ?? 'STF-001') : 'Pending';
-    final String designation = _profile?['designation'] ?? 'Staff';
-    final String department = _profile?['department'] ?? 'General';
-    final String joinedDate = _profile?['joined_date'] ?? 'Recently';
-    final String officeBase = _profile?['office_base'] ?? 'Store Floor';
+    final String staffName = _profile?['name'] ?? _service.currentUser?.email?.split('@').first ?? 'Anggota Krew';
+    final String staffEmail = _profile?['email'] ?? _service.currentUser?.email ?? 'staf@ngam.my';
+    final String staffPhone = (_profile?['phone']?.toString().trim().isNotEmpty == true)
+        ? _profile!['phone'].toString()
+        : 'Belum ditetapkan';
+    final String staffCode = isLinked ? (_profile?['staff_code'] ?? 'STF-001') : 'Belum Dipautkan';
+    final String designation = _profile?['designation'] ?? 'Staf';
+    final String department = _profile?['department'] ?? 'Umum';
+    final String joinedDate = _profile?['joined_date'] ?? 'Terkini';
+    final String officeBase = (_profile?['office_base']?.toString().trim().isNotEmpty == true)
+        ? _profile!['office_base'].toString()
+        : 'Cawangan Utama';
     final String businessName = isLinked
-        ? (_profile?['businesses']?['business_name'] ?? 'Your Store')
-        : 'Not Connected to Workplace';
+        ? (_profile?['businesses']?['business_name'] ?? 'Kedai Anda')
+        : 'Belum Dipautkan ke Tempat Kerja';
 
     return Scaffold(
       backgroundColor:
@@ -680,7 +684,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const Spacer(),
                               // Edit Profile Button
                               IconButton(
-                                tooltip: 'Edit Profile',
+                                tooltip: 'Sunting Profil',
                                 icon: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
@@ -751,7 +755,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 _InfoRow(
                                   isDark: isDark,
                                   icon: HugeIcons.strokeRoundedStore01,
-                                  label: 'Assigned Business',
+                                  label: 'Perniagaan Ditugaskan',
                                   value: businessName,
                                 ),
                                 _buildRowDivider(isDark),
@@ -792,7 +796,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 size: 18,
                               ),
                               label: const Text(
-                                'Update My Details',
+                                'Kemas Kini Maklumat Saya',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,

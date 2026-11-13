@@ -236,7 +236,103 @@ class _DashboardShellState extends State<DashboardShell> {
               }),
 
               const Spacer(),
-              SizedBox(height: isCompactHeight ? 12 : 24),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: isCompactHeight ? 10 : 12),
+                child: ValueListenableBuilder<String>(
+                  valueListenable: AppUpdateService.versionNotifier,
+                  builder: (context, ver, _) {
+                    return ValueListenableBuilder<AppReleaseInfo?>(
+                      valueListenable: AppUpdateService.availableUpdateNotifier,
+                      builder: (context, update, _) {
+                        final hasUpdate = update != null;
+                        final Color statusColor =
+                            hasUpdate ? Colors.amberAccent : const Color(0xFF10B981);
+
+                        return Tooltip(
+                          message: context.tr('update.check_tooltip'),
+                          child: InkWell(
+                            onTap: () {
+                              if (update != null) {
+                                AppUpdateService.showUpdateDialog(context, update);
+                              } else {
+                                AppUpdateService.checkManually(context);
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: isCompactHeight ? 6 : 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(
+                                  alpha: hasUpdate ? 0.14 : 0.07,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: statusColor.withValues(
+                                    alpha: hasUpdate ? 0.45 : 0.22,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: BoxDecoration(
+                                      color: statusColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Ngam Teams v$ver',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white70
+                                            : const Color(0xFF334155),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      hasUpdate
+                                          ? context
+                                              .tr('update.update_pill')
+                                              .replaceAll('{v}', update.version)
+                                          : context.tr('update.latest_pill'),
+                                      style: TextStyle(
+                                        color: statusColor,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: isCompactHeight ? 10 : 16),
             ],
           ),
         ),
@@ -278,39 +374,76 @@ class _DashboardShellState extends State<DashboardShell> {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Text(
-                          context.tr('nav.staff_portal'),
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.4)
-                                : const Color(0xFF64748B),
-                            fontSize: 14,
+                        Flexible(
+                          child: Text(
+                            context.tr('nav.staff_portal'),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.4)
+                                  : const Color(0xFF64748B),
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            'v${AppUpdateService.currentVersion} • TERKINI',
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                        ValueListenableBuilder<String>(
+                          valueListenable: AppUpdateService.versionNotifier,
+                          builder: (context, ver, _) {
+                            return ValueListenableBuilder<AppReleaseInfo?>(
+                              valueListenable:
+                                  AppUpdateService.availableUpdateNotifier,
+                              builder: (context, update, _) {
+                                final hasUpdate = update != null;
+                                final Color pillColor = hasUpdate
+                                    ? Colors.amberAccent
+                                    : AppColors.primary;
+                                return Tooltip(
+                                  message: context.tr('update.check_tooltip'),
+                                  child: InkWell(
+                                    onTap: () {
+                                      if (update != null) {
+                                        AppUpdateService.showUpdateDialog(
+                                            context, update);
+                                      } else {
+                                        AppUpdateService.checkManually(context);
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: 2.5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: pillColor.withValues(
+                                          alpha: hasUpdate ? 0.18 : 0.14,
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: pillColor.withValues(
+                                            alpha: hasUpdate ? 0.5 : 0.3,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        hasUpdate
+                                            ? 'v$ver → ${context.tr('update.update_pill').replaceAll('{v}', update.version)}'
+                                            : 'v$ver • ${context.tr('update.latest_pill')}',
+                                        style: TextStyle(
+                                          color: pillColor,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.4,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
                       ],
                     ),

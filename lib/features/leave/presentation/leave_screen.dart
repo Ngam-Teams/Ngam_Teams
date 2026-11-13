@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:intl/intl.dart';
+import '../../../core/services/teams_supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/glass_panel.dart';
 import '../../../widgets/glass_toast.dart';
@@ -13,62 +15,96 @@ class LeaveScreen extends StatefulWidget {
 }
 
 class _LeaveScreenState extends State<LeaveScreen> {
-  final List<_LeaveRequest> _requests = [
-    _LeaveRequest(
-      type: 'Annual Leave',
-      from: 'Oct 15, 2026',
-      to: 'Oct 17, 2026',
-      days: 3,
-      reason: 'Hari Raya family gathering',
-      status: 'Approved',
-      statusColor: AppColors.success,
-    ),
-    _LeaveRequest(
-      type: 'Medical Leave',
-      from: 'Sep 5, 2026',
-      to: 'Sep 5, 2026',
-      days: 1,
-      reason: 'Doctor appointment',
-      status: 'Approved',
-      statusColor: AppColors.success,
-    ),
-    _LeaveRequest(
-      type: 'Annual Leave',
-      from: 'Nov 20, 2026',
-      to: 'Nov 21, 2026',
-      days: 2,
-      reason: 'Personal errands',
-      status: 'Pending',
-      statusColor: AppColors.warning,
-    ),
-    _LeaveRequest(
-      type: 'Emergency Leave',
-      from: 'Aug 12, 2026',
-      to: 'Aug 12, 2026',
-      days: 1,
-      reason: 'Family emergency',
-      status: 'Approved',
-      statusColor: AppColors.success,
-    ),
-  ];
+  List<_LeaveRequest> _requests = [];
+  bool _isLoading = true;
+
+  static const Map<String, String> _leaveTypeLabels = {
+    'Annual Leave': 'Cuti Tahunan',
+    'Medical Leave': 'Cuti Sakit (MC)',
+    'Emergency Leave': 'Cuti Kecemasan',
+    'Unpaid Leave': 'Cuti Tanpa Gaji',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLeaves();
+  }
+
+  Future<void> _loadLeaves() async {
+    setState(() => _isLoading = true);
+    try {
+      final rows = await TeamsSupabaseService.instance.fetchLeaves();
+      if (!mounted) return;
+      setState(() {
+        _requests = rows.map((row) {
+          final rawType = (row['leave_type'] as String?) ?? 'Annual Leave';
+          final startRaw = (row['start_date'] as String?) ?? '';
+          final endRaw = (row['end_date'] as String?) ?? '';
+          final startDt = DateTime.tryParse(startRaw);
+          final endDt = DateTime.tryParse(endRaw);
+          final fromStr = startDt != null ? DateFormat('dd MMM yyyy').format(startDt) : startRaw;
+          final toStr = endDt != null ? DateFormat('dd MMM yyyy').format(endDt) : endRaw;
+          final daysCount = (row['days_count'] as num?)?.toInt() ??
+              ((startDt != null && endDt != null) ? (endDt.difference(startDt).inDays + 1).clamp(1, 365) : 1);
+          final rawStatus = (row['status'] as String?) ?? 'Pending';
+          final statusNorm = rawStatus.toLowerCase();
+
+          Color statusColor = AppColors.warning;
+          String statusLabel = 'Menunggu';
+          if (statusNorm == 'approved') {
+            statusColor = AppColors.success;
+            statusLabel = 'Diluluskan';
+          } else if (statusNorm == 'rejected') {
+            statusColor = AppColors.error;
+            statusLabel = 'Ditolak';
+          }
+
+          return _LeaveRequest(
+            rawType: rawType,
+            type: _leaveTypeLabels[rawType] ?? rawType,
+            from: fromStr,
+            to: toStr,
+            days: daysCount,
+            reason: (row['reason'] as String?) ?? '-',
+            rawStatus: rawStatus,
+            status: statusLabel,
+            statusColor: statusColor,
+          );
+        }).toList();
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  int _usedDaysFor(String rawType) {
+    return _requests
+        .where((r) => r.rawType == rawType && r.rawStatus.toLowerCase() == 'approved')
+        .fold(0, (sum, r) => sum + r.days);
+  }
 
   void _showApplyForm() {
     ModalSheet.show(
       context: context,
-      initialChildSize: 0.75,
-      builder: (context, scrollController) {
+      initialChildSize: 0.78,
+      builder: (sheetCtx, scrollController) {
         String selectedType = 'Annual Leave';
+        DateTime? startDate = DateTime.now();
+        DateTime? endDate = DateTime.now();
+        bool submitting = false;
         final reasonController = TextEditingController();
 
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
 
         return StatefulBuilder(
-          builder: (context, setSheetState) {
+          builder: (ctx, setSheetState) {
             return ListView(
               controller: scrollController,
               children: [
                 Text(
-                  'Apply for Leave',
+                  'Mohon Cuti Baharu',
                   style: TextStyle(
                     color: isDark ? Colors.white : const Color(0xFF1E293B),
                     fontSize: 22,
@@ -78,17 +114,17 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Fill in the details below',
+                  'Lengkapkan butiran permohonan cuti anda di bawah',
                   style: TextStyle(
                     color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B),
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
 
                 // Leave Type
                 Text(
-                  'Leave Type',
+                  'Jenis Cuti',
                   style: TextStyle(
                     color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF334155),
                     fontSize: 14,
@@ -99,12 +135,9 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
-                  children: [
-                    'Annual Leave',
-                    'Medical Leave',
-                    'Emergency Leave',
-                    'Unpaid Leave',
-                  ].map((type) {
+                  children: _leaveTypeLabels.entries.map((entry) {
+                    final type = entry.key;
+                    final label = entry.value;
                     final isSelected = selectedType == type;
                     return GestureDetector(
                       onTap: () => setSheetState(() => selectedType = type),
@@ -126,7 +159,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                           ),
                         ),
                         child: Text(
-                          type,
+                          label,
                           style: TextStyle(
                             color: isSelected ? AppColors.primary : (isDark ? Colors.white70 : const Color(0xFF475569)),
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -141,9 +174,9 @@ class _LeaveScreenState extends State<LeaveScreen> {
 
                 // Date Range
                 Text(
-                  'Date Range',
+                  'Tempoh Tarikh',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF334155),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -152,11 +185,30 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _DatePickerField(label: 'From'),
+                      child: _DatePickerField(
+                        label: 'Tarikh Mula',
+                        initialDate: startDate,
+                        onDateSelected: (d) {
+                          setSheetState(() {
+                            startDate = d;
+                            if (endDate == null || endDate!.isBefore(d)) {
+                              endDate = d;
+                            }
+                          });
+                        },
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _DatePickerField(label: 'To'),
+                      child: _DatePickerField(
+                        label: 'Tarikh Tamat',
+                        initialDate: endDate,
+                        onDateSelected: (d) {
+                          setSheetState(() {
+                            endDate = d;
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -164,7 +216,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
 
                 // Reason
                 Text(
-                  'Reason',
+                  'Sebab Permohonan',
                   style: TextStyle(
                     color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF334155),
                     fontSize: 14,
@@ -177,7 +229,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                   maxLines: 3,
                   style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B)),
                   decoration: InputDecoration(
-                    hintText: 'Brief reason for your leave...',
+                    hintText: 'Nyatakan sebab permohonan cuti anda...',
                     hintStyle: TextStyle(
                       color: isDark ? Colors.white.withValues(alpha: 0.3) : const Color(0xFF94A3B8),
                     ),
@@ -211,13 +263,51 @@ class _LeaveScreenState extends State<LeaveScreen> {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      showGlassToast(
-                        this.context,
-                        'Leave request submitted! ✅',
-                      );
-                    },
+                    onPressed: submitting
+                        ? null
+                        : () async {
+                            final reason = reasonController.text.trim();
+                            if (reason.isEmpty) {
+                              showGlassToast(this.context, 'Sila nyatakan sebab permohonan cuti.', isError: true);
+                              return;
+                            }
+                            final sDate = startDate ?? DateTime.now();
+                            final eDate = (endDate != null && !endDate!.isBefore(sDate)) ? endDate! : sDate;
+
+                            setSheetState(() => submitting = true);
+                            try {
+                              final res = await TeamsSupabaseService.instance.submitLeaveRequest(
+                                leaveType: selectedType,
+                                startDate: sDate,
+                                endDate: eDate,
+                                reason: reason,
+                              );
+                              if (!mounted) return;
+                              Navigator.of(sheetCtx).pop();
+                              if (res != null) {
+                                showGlassToast(
+                                  this.context,
+                                  'Permohonan cuti berjaya dihantar! ✅',
+                                );
+                                _loadLeaves();
+                              } else {
+                                showGlassToast(
+                                  this.context,
+                                  'Sila log masuk dan pautkan Kod Staf terlebih dahulu.',
+                                  isError: true,
+                                );
+                              }
+                            } catch (e) {
+                              setSheetState(() => submitting = false);
+                              if (mounted) {
+                                showGlassToast(
+                                  this.context,
+                                  'Gagal menghantar permohonan cuti. Pastikan akaun telah dipautkan ke kedai.',
+                                  isError: true,
+                                );
+                              }
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -225,13 +315,19 @@ class _LeaveScreenState extends State<LeaveScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text(
-                      'Submit Request',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    child: submitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Text(
+                            'Hantar Permohonan',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -247,63 +343,88 @@ class _LeaveScreenState extends State<LeaveScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ─── Leave Balance ────────────────────────────────────
-          _buildLeaveBalance(),
-          const SizedBox(height: 24),
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: _loadLeaves,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 120),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── Leave Balance ────────────────────────────────────
+            _buildLeaveBalance(),
+            const SizedBox(height: 24),
 
-          // ─── Apply Button ─────────────────────────────────────
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: ElevatedButton.icon(
-              onPressed: _showApplyForm,
-              icon: const HugeIcon(
-                icon: HugeIcons.strokeRoundedAdd01,
-                color: Colors.white,
-                size: 20,
-              ),
-              label: const Text(
-                'Apply for Leave',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+            // ─── Apply Button ─────────────────────────────────────
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton.icon(
+                onPressed: _showApplyForm,
+                icon: const HugeIcon(
+                  icon: HugeIcons.strokeRoundedAdd01,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                label: const Text(
+                  'Mohon Cuti Baharu',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // ─── Leave History ────────────────────────────────────
-          GlassPanel(
-            title: 'My Requests',
-            icon: HugeIcons.strokeRoundedNote01,
-            child: Column(
-              children: _requests.asMap().entries.map((entry) {
-                final index = entry.key;
-                final r = entry.value;
-                return Column(
-                  children: [
-                    if (index > 0)
-                      Divider(
-                        color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
-                        height: 24,
+            // ─── Leave History ────────────────────────────────────
+            GlassPanel(
+              title: 'Senarai Permohonan Saya',
+              icon: HugeIcons.strokeRoundedNote01,
+              child: _isLoading
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: CircularProgressIndicator(color: AppColors.primary),
                       ),
-                    _LeaveRequestRow(request: r),
-                  ],
-                );
-              }).toList(),
+                    )
+                  : _requests.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: Text(
+                              'Tiada permohonan cuti direkodkan.',
+                              style: TextStyle(
+                                color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Column(
+                          children: _requests.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final r = entry.value;
+                            return Column(
+                              children: [
+                                if (index > 0)
+                                  Divider(
+                                    color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07),
+                                    height: 24,
+                                  ),
+                                _LeaveRequestRow(request: r),
+                              ],
+                            );
+                          }).toList(),
+                        ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -313,20 +434,20 @@ class _LeaveScreenState extends State<LeaveScreen> {
       builder: (context, constraints) {
         final items = [
           _BalanceItem(
-            label: 'Annual Leave',
-            used: 6,
+            label: 'Cuti Tahunan',
+            used: _usedDaysFor('Annual Leave'),
             total: 18,
             color: AppColors.primary,
           ),
           _BalanceItem(
-            label: 'Medical Leave',
-            used: 2,
+            label: 'Cuti Sakit (MC)',
+            used: _usedDaysFor('Medical Leave'),
             total: 14,
             color: AppColors.info,
           ),
           _BalanceItem(
-            label: 'Emergency Leave',
-            used: 1,
+            label: 'Cuti Kecemasan',
+            used: _usedDaysFor('Emergency Leave'),
             total: 5,
             color: AppColors.warning,
           ),
@@ -367,8 +488,8 @@ class _LeaveScreenState extends State<LeaveScreen> {
 
   Widget _buildBalanceCard(_BalanceItem item) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final remaining = item.total - item.used;
-    final progress = item.used / item.total;
+    final remaining = (item.total - item.used).clamp(0, item.total);
+    final progress = (item.used / item.total).clamp(0.0, 1.0);
 
     return GlassPanel(
       padding: const EdgeInsets.all(16),
@@ -392,7 +513,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 ),
               ),
               Text(
-                '$remaining left',
+                'Baki $remaining',
                 style: TextStyle(
                   color: item.color,
                   fontSize: 12,
@@ -424,7 +545,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                '${item.used} of ${item.total} used',
+                '${item.used} daripada ${item.total} hari digunakan',
                 style: TextStyle(
                   color: isDark ? Colors.white.withValues(alpha: 0.45) : const Color(0xFF94A3B8),
                   fontSize: 11,
@@ -492,7 +613,7 @@ class _LeaveRequestRow extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${request.from} — ${request.to} (${request.days} day${request.days > 1 ? 's' : ''})',
+                '${request.from} — ${request.to} (${request.days} hari)',
                 style: TextStyle(
                   color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF64748B),
                   fontSize: 13,
@@ -534,20 +655,24 @@ class _LeaveRequestRow extends StatelessWidget {
 }
 
 class _LeaveRequest {
+  final String rawType;
   final String type;
   final String from;
   final String to;
   final int days;
   final String reason;
+  final String rawStatus;
   final String status;
   final Color statusColor;
 
   const _LeaveRequest({
+    required this.rawType,
     required this.type,
     required this.from,
     required this.to,
     required this.days,
     required this.reason,
+    required this.rawStatus,
     required this.status,
     required this.statusColor,
   });
@@ -556,8 +681,14 @@ class _LeaveRequest {
 // ─── Date Picker Field ───────────────────────────────────────
 class _DatePickerField extends StatefulWidget {
   final String label;
+  final DateTime? initialDate;
+  final ValueChanged<DateTime>? onDateSelected;
 
-  const _DatePickerField({required this.label});
+  const _DatePickerField({
+    required this.label,
+    this.initialDate,
+    this.onDateSelected,
+  });
 
   @override
   State<_DatePickerField> createState() => _DatePickerFieldState();
@@ -567,6 +698,12 @@ class _DatePickerFieldState extends State<_DatePickerField> {
   DateTime? _selectedDate;
 
   @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -574,8 +711,8 @@ class _DatePickerFieldState extends State<_DatePickerField> {
       onTap: () async {
         final date = await showDatePicker(
           context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime.now(),
+          initialDate: _selectedDate ?? DateTime.now(),
+          firstDate: DateTime.now().subtract(const Duration(days: 7)),
           lastDate: DateTime.now().add(const Duration(days: 365)),
           builder: (context, child) {
             return Theme(
@@ -598,6 +735,7 @@ class _DatePickerFieldState extends State<_DatePickerField> {
         );
         if (date != null) {
           setState(() => _selectedDate = date);
+          widget.onDateSelected?.call(date);
         }
       },
       child: Container(
@@ -617,16 +755,20 @@ class _DatePickerFieldState extends State<_DatePickerField> {
               size: 18,
             ),
             const SizedBox(width: 10),
-            Text(
-              _selectedDate != null
-                  ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                  : widget.label,
-              style: TextStyle(
-                color: _selectedDate != null
-                    ? (isDark ? Colors.white : const Color(0xFF1E293B))
-                    : (isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF94A3B8)),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+            Expanded(
+              child: Text(
+                _selectedDate != null
+                    ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                    : widget.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _selectedDate != null
+                      ? (isDark ? Colors.white : const Color(0xFF1E293B))
+                      : (isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF94A3B8)),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],

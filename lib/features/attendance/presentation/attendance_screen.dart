@@ -22,6 +22,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   bool _isCheckedIn = false;
   String? _checkInTime;
   String? _checkOutTime;
+  DateTime? _rawCheckIn;
+  DateTime? _rawCheckOut;
   List<Map<String, dynamic>> _attendanceHistory = [];
 
   late AnimationController _pulseController;
@@ -48,25 +50,42 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     TeamsSupabaseService.instance.attendanceNotifier.addListener(_syncAttendanceFromNotifier);
   }
 
+  void _applyTodayAttendance(Map<String, dynamic>? today) {
+    if (today != null) {
+      final inTimeStr = today['check_in_time'] as String?;
+      final outTimeStr = today['check_out_time'] as String?;
+      _rawCheckIn = inTimeStr != null ? DateTime.tryParse(inTimeStr)?.toLocal() : null;
+      _rawCheckOut = outTimeStr != null ? DateTime.tryParse(outTimeStr)?.toLocal() : null;
+      _checkInTime = _rawCheckIn != null ? DateFormat('hh:mm a').format(_rawCheckIn!) : null;
+      _checkOutTime = _rawCheckOut != null ? DateFormat('hh:mm a').format(_rawCheckOut!) : null;
+      _isCheckedIn = _checkInTime != null && _checkOutTime == null;
+    } else {
+      _isCheckedIn = false;
+      _checkInTime = null;
+      _checkOutTime = null;
+      _rawCheckIn = null;
+      _rawCheckOut = null;
+    }
+  }
+
+  String _computeWorkingHoursLabel() {
+    if (_rawCheckIn == null) return '—';
+    final end = _rawCheckOut ?? DateTime.now();
+    final diff = end.difference(_rawCheckIn!);
+    if (diff.isNegative) return '0j 0m';
+    final hours = diff.inHours;
+    final mins = diff.inMinutes.remainder(60);
+    if (_isCheckedIn) {
+      return '${hours}j ${mins}m (Sedang bertugas)';
+    }
+    return '${hours}j ${mins}m';
+  }
+
   void _syncAttendanceFromNotifier() {
     final today = TeamsSupabaseService.instance.attendanceNotifier.value;
     if (!mounted) return;
     setState(() {
-      if (today != null) {
-        final inTimeStr = today['check_in_time'];
-        final outTimeStr = today['check_out_time'];
-        _checkInTime = inTimeStr != null
-            ? DateFormat('hh:mm a').format(DateTime.parse(inTimeStr).toLocal())
-            : null;
-        _checkOutTime = outTimeStr != null
-            ? DateFormat('hh:mm a').format(DateTime.parse(outTimeStr).toLocal())
-            : null;
-        _isCheckedIn = _checkInTime != null && _checkOutTime == null;
-      } else {
-        _isCheckedIn = false;
-        _checkInTime = null;
-        _checkOutTime = null;
-      }
+      _applyTodayAttendance(today);
     });
   }
 
@@ -77,17 +96,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
       if (mounted) {
         setState(() {
-          if (today != null) {
-            final inTimeStr = today['check_in_time'];
-            final outTimeStr = today['check_out_time'];
-            _checkInTime = inTimeStr != null
-                ? DateFormat('hh:mm a').format(DateTime.parse(inTimeStr).toLocal())
-                : null;
-            _checkOutTime = outTimeStr != null
-                ? DateFormat('hh:mm a').format(DateTime.parse(outTimeStr).toLocal())
-                : null;
-            _isCheckedIn = _checkInTime != null && _checkOutTime == null;
-          }
+          _applyTodayAttendance(today);
           _attendanceHistory = history;
         });
       }
@@ -103,40 +112,45 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   }
 
   Future<void> _toggleCheckIn() async {
-    final now = DateFormat('hh:mm a').format(DateTime.now());
+    final nowDt = DateTime.now();
+    final now = DateFormat('hh:mm a').format(nowDt);
     try {
       if (!_isCheckedIn) {
-        await TeamsSupabaseService.instance.checkIn();
+        final res = await TeamsSupabaseService.instance.checkIn();
+        if (res == null) {
+          if (mounted) {
+            showGlassToast(
+              context,
+              'Sila log masuk dan pautkan Kod Staf terlebih dahulu.',
+              isError: true,
+            );
+          }
+          return;
+        }
         setState(() {
           _isCheckedIn = true;
+          _rawCheckIn = nowDt;
+          _rawCheckOut = null;
           _checkInTime = now;
           _checkOutTime = null;
         });
-        if (mounted) showGlassToast(context, 'Checked in at $_checkInTime ✅');
+        if (mounted) showGlassToast(context, 'Waktu masuk direkodkan pada $_checkInTime ✅');
       } else {
         await TeamsSupabaseService.instance.checkOut();
         setState(() {
           _isCheckedIn = false;
+          _rawCheckOut = nowDt;
           _checkOutTime = now;
         });
-        if (mounted) showGlassToast(context, 'Checked out at $_checkOutTime 👋');
+        if (mounted) showGlassToast(context, 'Waktu keluar direkodkan pada $_checkOutTime 👋');
       }
       _loadAttendance();
     } catch (e) {
-      setState(() {
-        if (!_isCheckedIn) {
-          _isCheckedIn = true;
-          _checkInTime = now;
-          _checkOutTime = null;
-        } else {
-          _isCheckedIn = false;
-          _checkOutTime = now;
-        }
-      });
       if (mounted) {
         showGlassToast(
           context,
-          _isCheckedIn ? 'Checked in at $_checkInTime' : 'Checked out at $_checkOutTime',
+          'Gagal merekod kehadiran. Pastikan akaun telah dipautkan ke kedai.',
+          isError: true,
         );
       }
     }
@@ -277,28 +291,28 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
                       // ─── Today's Status ───────────────────────────
           GlassPanel(
-            title: "Today's Status",
+            title: 'Status Hari Ini',
             icon: HugeIcons.strokeRoundedCalendar03,
             child: Column(
               children: [
                 _StatusRow(
                   icon: HugeIcons.strokeRoundedLogin02,
-                  label: 'Check In',
+                  label: 'Waktu Masuk',
                   value: _checkInTime ?? '—',
                   color: AppColors.success,
                 ),
                 const SizedBox(height: 16),
                 _StatusRow(
                   icon: HugeIcons.strokeRoundedLogout02,
-                  label: 'Check Out',
+                  label: 'Waktu Keluar',
                   value: _checkOutTime ?? '—',
                   color: AppColors.error,
                 ),
                 const SizedBox(height: 16),
                 _StatusRow(
                   icon: HugeIcons.strokeRoundedClock01,
-                  label: 'Working Hours',
-                  value: _isCheckedIn ? 'In progress…' : (_checkInTime != null ? '9h 0m' : '—'),
+                  label: 'Tempoh Bertugas',
+                  value: _computeWorkingHoursLabel(),
                   color: AppColors.primary,
                 ),
               ],
@@ -308,21 +322,20 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
           // ─── Weekly History ───────────────────────────────────
           GlassPanel(
-            title: 'Attendance History',
+            title: 'Sejarah Kehadiran',
             icon: HugeIcons.strokeRoundedActivity01,
             child: _attendanceHistory.isEmpty
-                ? Column(
-                    children: [
-                      _HistoryRow(
-                        date: DateFormat('EEE, MMM d').format(DateTime.now()),
-                        checkIn: _checkInTime ?? '—',
-                        checkOut: _checkOutTime ?? '—',
-                        status: _isCheckedIn ? 'Active' : (_checkInTime != null ? 'Done' : 'Pending'),
-                        statusColor: _isCheckedIn
-                            ? AppColors.primary
-                            : (_checkInTime != null ? AppColors.success : AppColors.textTertiary),
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: Text(
+                        'Tiada rekod kehadiran lagi.',
+                        style: TextStyle(
+                          color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                          fontSize: 13,
+                        ),
                       ),
-                    ],
+                    ),
                   )
                 : Column(
                     children: [
@@ -339,7 +352,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                             DateTime? parsedDate = DateTime.tryParse(dateStr);
                             final displayDate = parsedDate != null
                                 ? DateFormat('EEE, MMM d').format(parsedDate)
-                                : (dateStr.isNotEmpty ? dateStr : 'Today');
+                                : (dateStr.isNotEmpty ? dateStr : 'Hari Ini');
 
                             final inStr = item['check_in_time'];
                             final outStr = item['check_out_time'];
@@ -491,7 +504,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                _isCheckedIn ? 'Tap to check out' : 'Tap to check in',
+                _isCheckedIn ? 'Ketik untuk tamat syif' : 'Ketik untuk mula bertugas',
                 style: TextStyle(
                   color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B),
                   fontSize: 14,

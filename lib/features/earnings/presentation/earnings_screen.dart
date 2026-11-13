@@ -40,6 +40,22 @@ class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProvid
     _loadPayrollData();
   }
 
+  static const List<String> _malayMonths = [
+    '',
+    'Januari',
+    'Februari',
+    'Mac',
+    'April',
+    'Mei',
+    'Jun',
+    'Julai',
+    'Ogos',
+    'September',
+    'Oktober',
+    'November',
+    'Disember',
+  ];
+
   Future<void> _loadPayrollData() async {
     setState(() => _isLoading = true);
     try {
@@ -49,8 +65,12 @@ class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProvid
 
       if (mounted) {
         double basic = 0.0;
+        double serviceCommRate = 35.0;
+        String? myStaffId;
         if (settings != null) {
           basic = (settings['base_salary'] as num?)?.toDouble() ?? 0.0;
+          serviceCommRate = (settings['service_commission_rate'] as num?)?.toDouble() ?? 35.0;
+          myStaffId = settings['staff_id']?.toString();
         }
 
         double commToday = 0.0;
@@ -58,15 +78,24 @@ class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProvid
         final todayStr = DateTime.now().toIso8601String().substring(0, 10);
 
         for (final b in tempahan) {
+          final bStatus = (b['status'] as String? ?? '').toLowerCase();
+          if (bStatus != 'completed') continue;
+          if (myStaffId != null && b['staff_id'] != null && b['staff_id'].toString() != myStaffId) {
+            continue;
+          }
           final bDate = (b['booking_date'] as String? ?? '');
-          final comm = (b['commission_amount'] as num?)?.toDouble() ?? 0.0;
+          final price = (b['total_price'] as num?)?.toDouble() ??
+              (b['total_amount'] as num?)?.toDouble() ??
+              0.0;
+          final comm = (b['commission_amount'] as num?)?.toDouble() ??
+              (price * (serviceCommRate / 100.0));
           if (comm > 0) {
             commToday += comm;
             if (bDate == todayStr) {
               commItems.add({
                 'service': b['service_name'] ?? b['title'] ?? 'Perkhidmatan',
                 'time': b['booking_time'] ?? '',
-                'price': (b['total_amount'] as num?)?.toDouble() ?? 0.0,
+                'price': price,
                 'comm': comm,
               });
             }
@@ -78,17 +107,30 @@ class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProvid
           _commissionPay = commToday;
           _commissionsToday = commItems;
           _payslipHistory = payslips.map((p) {
-            final month = p['month'] as String? ?? 'Bulan Semasa';
-            final basicVal = (p['base_salary'] as num?)?.toDouble() ?? 0.0;
+            final rawMonth = p['month'];
+            final rawYear = p['year'] ?? DateTime.now().year;
+            String monthLabel = 'Bulan Semasa';
+            if (rawMonth is int && rawMonth >= 1 && rawMonth <= 12) {
+              monthLabel = '${_malayMonths[rawMonth]} $rawYear';
+            } else if (rawMonth != null) {
+              monthLabel = '$rawMonth $rawYear'.trim();
+            }
+
+            final basicVal = (p['base_salary'] as num?)?.toDouble() ?? basic;
             final allowance = (p['allowance'] as num?)?.toDouble() ?? 0.0;
             final bonus = (p['bonus'] as num?)?.toDouble() ?? 0.0;
-            final commVal = (p['commission'] as num?)?.toDouble() ?? 0.0;
-            final netVal = (p['net_salary'] as num?)?.toDouble() ?? 0.0;
-            final statusStr = p['status'] as String? ?? 'pending';
+            final commVal = (p['commission'] as num?)?.toDouble() ?? commToday;
+            final epf = basicVal * 0.11;
+            final socso = basicVal > 0 ? 9.25 : 0.0;
+            final eis = basicVal > 0 ? 3.70 : 0.0;
+            final computedNet = (basicVal + allowance + bonus + commVal) - (epf + socso + eis);
+            final netVal = (p['net_salary'] as num?)?.toDouble() ??
+                (basicVal > 0 ? computedNet : ((p['total_amount'] as num?)?.toDouble() ?? 0.0));
+            final statusStr = (p['status'] as String? ?? 'pending').toLowerCase();
 
             return {
-              'month': month,
-              'payDate': p['created_at'] != null ? (p['created_at'] as String).substring(0, 10) : '—',
+              'month': monthLabel,
+              'payDate': p['created_at'] != null ? p['created_at'].toString().substring(0, 10) : '—',
               'basic': basicVal,
               'ot': allowance + bonus,
               'commission': commVal,

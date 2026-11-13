@@ -14,6 +14,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/localization/app_translations.dart';
+import '../../../core/services/app_update_service.dart';
 import '../../../core/state/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/glass_toast.dart';
@@ -44,6 +45,8 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
+    AppUpdateService.getAppVersion();
+    AppUpdateService.checkForUpdate();
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 750),
@@ -380,16 +383,84 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
 
-                // Footer Note
+                // Footer Note & Live Version
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    context.tr('auth.security_notice'),
-                    style: TextStyle(
-                      color: isDark ? Colors.white.withValues(alpha: 0.3) : const Color(0xFF94A3B8),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ValueListenableBuilder<String>(
+                        valueListenable: AppUpdateService.versionNotifier,
+                        builder: (context, ver, _) {
+                          return ValueListenableBuilder<AppReleaseInfo?>(
+                            valueListenable:
+                                AppUpdateService.availableUpdateNotifier,
+                            builder: (context, update, _) {
+                              final hasUpdate = update != null;
+                              final Color pillColor = hasUpdate
+                                  ? Colors.amberAccent
+                                  : AppColors.primary;
+                              return Tooltip(
+                                message: context.tr('update.check_tooltip'),
+                                child: InkWell(
+                                  onTap: () {
+                                    if (update != null) {
+                                      AppUpdateService.showUpdateDialog(
+                                          context, update);
+                                    } else {
+                                      AppUpdateService.checkManually(context);
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: pillColor.withValues(
+                                        alpha: hasUpdate ? 0.14 : 0.08,
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: pillColor.withValues(
+                                          alpha: hasUpdate ? 0.45 : 0.25,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      hasUpdate
+                                          ? 'Ngam Teams v$ver • ${context.tr('update.tap_to_update')}'
+                                          : 'Ngam Teams v$ver • ${context.tr('update.latest_pill')}',
+                                      style: TextStyle(
+                                        color: hasUpdate
+                                            ? Colors.amberAccent
+                                            : (isDark
+                                                ? Colors.white60
+                                                : const Color(0xFF475569)),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      Text(
+                        context.tr('auth.security_notice'),
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : const Color(0xFF94A3B8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

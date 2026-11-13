@@ -20,12 +20,12 @@ class TeamsSupabaseService {
       // 1. Check team_members by user_id
       final teamRes = await _client
           .from('team_members')
-          .select('business_id, status, is_active')
+          .select('business_id, status')
           .eq('user_id', user.id)
           .maybeSingle();
 
       if (teamRes != null && teamRes['business_id'] != null) {
-        final isActive = teamRes['is_active'] != false && teamRes['status'] != 'inactive';
+        final isActive = teamRes['status'] != 'inactive';
         if (isActive) {
           return teamRes['business_id'] as String;
         }
@@ -37,25 +37,16 @@ class TeamsSupabaseService {
         try {
           inviteRes = await _client
               .from('team_members')
-              .select('id, business_id')
-              .ilike('user_email', user.email!.trim())
+              .select('id, business_id, status')
+              .ilike('email', user.email!.trim())
+              .neq('status', 'inactive')
               .maybeSingle();
         } catch (_) {}
-        if (inviteRes == null) {
-          try {
-            inviteRes = await _client
-                .from('team_members')
-                .select('id, business_id')
-                .ilike('email', user.email!.trim())
-                .maybeSingle();
-          } catch (_) {}
-        }
 
         if (inviteRes != null && inviteRes['business_id'] != null) {
           try {
             await _client.from('team_members').update({
               'user_id': user.id,
-              'is_active': true,
               'status': 'active',
             }).eq('id', inviteRes['id']);
           } catch (e) {
@@ -219,6 +210,10 @@ class TeamsSupabaseService {
     final businessId = await getCurrentBusinessId();
     if (businessId == null) throw Exception('No associated business found.');
 
+    final rawDays = endDate.difference(startDate).inDays + 1;
+    final daysCount = rawDays < 1 ? 1 : rawDays;
+    final cleanReason = (reason == null || reason.trim().isEmpty) ? '-' : reason.trim();
+
     final res = await _client
         .from('staff_leaves')
         .insert({
@@ -227,8 +222,9 @@ class TeamsSupabaseService {
           'leave_type': leaveType,
           'start_date': DateFormat('yyyy-MM-dd').format(startDate),
           'end_date': DateFormat('yyyy-MM-dd').format(endDate),
-          'reason': reason,
-          'status': 'pending',
+          'days_count': daysCount,
+          'reason': cleanReason,
+          'status': 'Pending',
         })
         .select()
         .single();
@@ -356,24 +352,15 @@ class TeamsSupabaseService {
           emailMatch = await _client
               .from('team_members')
               .select('*, businesses(business_name, business_industry, address_line, business_city, state)')
-              .ilike('user_email', user.email!.trim())
+              .ilike('email', user.email!.trim())
+              .neq('status', 'inactive')
               .maybeSingle();
         } catch (_) {}
-        if (emailMatch == null) {
-          try {
-            emailMatch = await _client
-                .from('team_members')
-                .select('*, businesses(business_name, business_industry, address_line, business_city, state)')
-                .ilike('email', user.email!.trim())
-                .maybeSingle();
-          } catch (_) {}
-        }
 
         if (emailMatch != null) {
           try {
             await _client.from('team_members').update({
               'user_id': user.id,
-              'is_active': true,
               'status': 'active',
             }).eq('id', emailMatch['id']);
           } catch (e) {
@@ -597,7 +584,7 @@ class TeamsSupabaseService {
 
       final res = await _client
           .from('team_members')
-          .select('id, name, designation, role, status, is_active, user_email, email')
+          .select('id, name, designation, role, status, email')
           .eq('business_id', businessId)
           .order('name');
 
@@ -608,25 +595,21 @@ class TeamsSupabaseService {
     }
   }
 
-  /// Fetches monthly payroll records for the logged-in staff.
+  /// Fetches monthly payroll records for the logged-in staff's business.
   Future<List<Map<String, dynamic>>> fetchMyPayroll() async {
     final user = currentUser;
     if (user == null) return [];
 
     try {
-      final member = await _client
-          .from('team_members')
-          .select('id, business_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-      if (member == null) return [];
+      final businessId = await getCurrentBusinessId();
+      if (businessId == null) return [];
 
       final res = await _client
           .from('monthly_payrolls')
           .select()
-          .eq('staff_id', member['id'])
-          .order('created_at', ascending: false);
+          .eq('business_id', businessId)
+          .order('year', ascending: false)
+          .order('month', ascending: false);
 
       return List<Map<String, dynamic>>.from(res);
     } catch (e) {

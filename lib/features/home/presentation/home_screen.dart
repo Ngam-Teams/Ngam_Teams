@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/localization/app_translations.dart';
 import '../../../core/services/teams_supabase_service.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../../widgets/glass_panel.dart';
@@ -157,8 +158,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Future<void> _handleClockIn() async {
     try {
-      await _service.checkIn();
-    } catch (_) {}
+      final res = await _service.checkIn();
+      if (res == null) {
+        if (mounted) {
+          showGlassToast(
+            context,
+            'Sila log masuk dan pautkan Kod Staf terlebih dahulu.',
+            isError: true,
+          );
+        }
+        return;
+      }
+    } catch (e) {
+      if (mounted) {
+        showGlassToast(
+          context,
+          'Gagal Clock In: Pastikan akaun telah dipautkan ke perniagaan.',
+          isError: true,
+        );
+      }
+      return;
+    }
     setState(() {
       _isCheckedIn = true;
       _isOnBreak = false;
@@ -272,7 +292,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           Navigator.pop(ctx);
                           try {
                             await _service.checkOut();
-                          } catch (_) {}
+                          } catch (e) {
+                            if (mounted) {
+                              showGlassToast(
+                                context,
+                                'Gagal merekod Clock Out. Sila cuba lagi.',
+                                isError: true,
+                              );
+                            }
+                            return;
+                          }
                           setState(() {
                             _isCheckedIn = false;
                             _isOnBreak = false;
@@ -334,6 +363,74 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         children: [
           // ─── Top Staff Header ──────────────────────────────────────
           _buildStaffHeader(context),
+          ValueListenableBuilder<AppReleaseInfo?>(
+            valueListenable: AppUpdateService.availableUpdateNotifier,
+            builder: (context, update, _) {
+              if (update == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: InkWell(
+                  onTap: () =>
+                      AppUpdateService.showUpdateDialog(context, update),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 11,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.amberAccent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Colors.amberAccent.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.system_update_alt_rounded,
+                          color: Colors.amberAccent,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '${context.tr('update.available_title')} (v${update.version})',
+                            style: const TextStyle(
+                              color: Colors.amberAccent,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.amberAccent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            context.tr('update.update_now'),
+                            style: const TextStyle(
+                              color: Color(0xFF0F172A),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
           const SizedBox(height: 18),
 
           // ─── Hero Attendance & Duty Command Card ───────────────────
@@ -368,30 +465,81 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _buildAnnouncementsSection(context),
           const SizedBox(height: 16),
           Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.black12,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.verified, size: 13, color: AppColors.primary),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Ngam Teams • Build Terkini v${AppUpdateService.currentVersion}',
-                    style: TextStyle(
-                      color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+            child: ValueListenableBuilder<String>(
+              valueListenable: AppUpdateService.versionNotifier,
+              builder: (context, ver, _) {
+                return ValueListenableBuilder<AppReleaseInfo?>(
+                  valueListenable: AppUpdateService.availableUpdateNotifier,
+                  builder: (context, update, _) {
+                    final hasUpdate = update != null;
+                    final Color statusColor =
+                        hasUpdate ? Colors.amberAccent : AppColors.primary;
+                    return Tooltip(
+                      message: context.tr('update.check_tooltip'),
+                      child: InkWell(
+                        onTap: () {
+                          if (update != null) {
+                            AppUpdateService.showUpdateDialog(context, update);
+                          } else {
+                            AppUpdateService.checkManually(context);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: hasUpdate
+                                ? Colors.amberAccent.withValues(alpha: 0.12)
+                                : (isDark
+                                    ? Colors.white.withValues(alpha: 0.04)
+                                    : Colors.black.withValues(alpha: 0.03)),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: hasUpdate
+                                  ? Colors.amberAccent.withValues(alpha: 0.45)
+                                  : (isDark ? Colors.white10 : Colors.black12),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                hasUpdate
+                                    ? Icons.system_update_alt_rounded
+                                    : Icons.verified,
+                                size: 13,
+                                color: statusColor,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  hasUpdate
+                                      ? 'Ngam Teams v$ver → ${context.tr('update.update_pill').replaceAll('{v}', update.version)}'
+                                      : 'Ngam Teams v$ver • ${context.tr('update.latest_pill')}',
+                                  style: TextStyle(
+                                    color: hasUpdate
+                                        ? Colors.amberAccent
+                                        : (isDark
+                                            ? Colors.white54
+                                            : const Color(0xFF64748B)),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
           const SizedBox(height: 20),
@@ -472,12 +620,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               children: [
                 Row(
                   children: [
-                    Text(
-                      _getTimeGreeting(),
-                      style: TextStyle(
-                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                    Flexible(
+                      child: Text(
+                        _getTimeGreeting(),
+                        style: TextStyle(
+                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -499,24 +651,62 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          width: 0.8,
-                        ),
-                      ),
-                      child: Text(
-                        'v${AppUpdateService.currentVersion}',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+                    ValueListenableBuilder<String>(
+                      valueListenable: AppUpdateService.versionNotifier,
+                      builder: (context, ver, _) {
+                        return ValueListenableBuilder<AppReleaseInfo?>(
+                          valueListenable:
+                              AppUpdateService.availableUpdateNotifier,
+                          builder: (context, update, _) {
+                            final hasUpdate = update != null;
+                            final Color pillColor = hasUpdate
+                                ? Colors.amberAccent
+                                : AppColors.primary;
+                            return Tooltip(
+                              message: context.tr('update.check_tooltip'),
+                              child: InkWell(
+                                onTap: () {
+                                  if (update != null) {
+                                    AppUpdateService.showUpdateDialog(
+                                        context, update);
+                                  } else {
+                                    AppUpdateService.checkManually(context);
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(5),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 1.5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: pillColor.withValues(
+                                      alpha: hasUpdate ? 0.18 : 0.12,
+                                    ),
+                                    borderRadius: BorderRadius.circular(5),
+                                    border: Border.all(
+                                      color: pillColor.withValues(
+                                        alpha: hasUpdate ? 0.5 : 0.3,
+                                      ),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    hasUpdate
+                                        ? 'v$ver → v${update.version}'
+                                        : 'v$ver',
+                                    style: TextStyle(
+                                      color: pillColor,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
