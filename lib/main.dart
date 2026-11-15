@@ -15,6 +15,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/state/app_settings.dart';
 import 'core/services/app_update_service.dart';
+import 'widgets/responsive_landscape_scale.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -117,6 +118,9 @@ class _NgamTeamsAppState extends State<NgamTeamsApp> {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
+              builder: (context, child) => child != null
+                  ? ResponsiveLandscapeScale(child: child)
+                  : const SizedBox.shrink(),
             );
           },
         );

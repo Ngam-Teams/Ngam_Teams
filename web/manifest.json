@@ -1,12 +1,12 @@
 {
-    "name": "ngam_teams",
-    "short_name": "ngam_teams",
+    "name": "Ngam Teams",
+    "short_name": "Ngam Teams",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0A0A14",
     "theme_color": "#0A0A14",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "description": "Portal rasmi kakitangan & krew operasi Ngam. Rekod kehadiran geofencing, jadual syif, tuntutan, cuti dan slip gaji digital.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {
