@@ -21,7 +21,6 @@ dependencies:
   # UI utilities
   google_fonts: ^6.2.1
   hugeicons: ^1.1.7
-  liquid_glass_widgets: 0.5.0
 
   # Utilities
   flutter_dotenv: ^6.0.1

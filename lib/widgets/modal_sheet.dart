@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'liquid_glass_compat.dart';
 
 /// Standardized expandable glassmorphic bottom sheet.
 /// Copied from Ngam Admin's modal_sheet.dart.

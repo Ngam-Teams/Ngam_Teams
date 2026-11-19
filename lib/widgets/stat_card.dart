@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'liquid_glass_compat.dart';
 import '../core/theme/app_colors.dart';
 
 /// Frosted-glass statistic card with hover micro-interactions.
