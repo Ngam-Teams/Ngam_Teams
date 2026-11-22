@@ -77,6 +77,7 @@ class _NgamTeamsAppState extends State<NgamTeamsApp> {
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return MaterialApp(
+            title: 'Ngam Teams',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               brightness: Brightness.dark,
