@@ -1,6 +1,6 @@
 {
-  "version": "0.1.21",
-  "build_number": 3,
-  "released_at": "2026-11-20T16:40:00Z",
-  "changelog": "Seragamkan ikon pelancar, tetapan splash screen natif serta skrin percikan PWA Ngam Teams mengikut rekaan rasmi Ngam."
+  "version": "0.1.22",
+  "build_number": 4,
+  "released_at": "2026-11-22T00:18:00Z",
+  "changelog": "Gantikan sidebar Ngam Teams kepada sidebar terapung Liquid Glass boleh kembang/kecil sebiji seperti Ngam & Ngam Business."
 }
