@@ -1,6 +1,6 @@
 {
-  "version": "0.1.22",
-  "build_number": 4,
-  "released_at": "2026-11-22T00:18:00Z",
-  "changelog": "Gantikan sidebar Ngam Teams kepada sidebar terapung Liquid Glass boleh kembang/kecil sebiji seperti Ngam & Ngam Business."
+  "version": "0.1.23",
+  "build_number": 5,
+  "released_at": "2026-11-23T07:05:13Z",
+  "changelog": "Tambah git hook automatik (.githooks) untuk menaikkan versi pubspec.yaml, web/version.json & AppUpdateService pada setiap commit."
 }

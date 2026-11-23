@@ -1,7 +1,7 @@
 name: ngam_teams
 description: "Ngam Teams – Staff Portal for the Ngam ecosystem."
 publish_to: 'none'
-version: 0.1.22+4
+version: 0.1.23+5
 
 environment:
   sdk: ^3.8.1
